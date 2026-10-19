@@ -1,0 +1,50 @@
+{
+  "name": "APEXFLOW OS — Autonomous Enterprise Architecture Platform",
+  "short_name": "APEXFLOW OS",
+  "description": "Executive 3D Keynote Deck, Live Architecture Holodeck, FinOps Economics & Autonomous Ingestion Engine",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "landscape-primary",
+  "background_color": "#030712",
+  "theme_color": "#00F0FF",
+  "categories": ["business", "developer", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Stage Keynote Player",
+      "short_name": "Stage",
+      "description": "Launch 3D Architecture Keynote Presentation Deck",
+      "url": "./stage.html",
+      "icons": [{ "src": "./icon.svg", "sizes": "96x96" }]
+    },
+    {
+      "name": "Executive War Room",
+      "short_name": "War Room",
+      "description": "Launch Real-Time Pitch Dashboard & Objection Defense",
+      "url": "./war-room.html",
+      "icons": [{ "src": "./icon.svg", "sizes": "96x96" }]
+    },
+    {
+      "name": "Executive Studio & Admin",
+      "short_name": "Studio",
+      "description": "Custom Architecture Deck Sequencer & Narrative Builder",
+      "url": "./admin.html",
+      "icons": [{ "src": "./icon.svg", "sizes": "96x96" }]
+    },
+    {
+      "name": "Project Ingestion Dropzone",
+      "short_name": "Ingestion",
+      "description": "Drag-and-drop Codebase & Architecture Ingestion",
+      "url": "./index.html",
+      "icons": [{ "src": "./icon.svg", "sizes": "96x96" }]
+    }
+  ]
+}

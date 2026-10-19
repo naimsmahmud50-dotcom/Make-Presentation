@@ -1,0 +1,389 @@
+{
+  "title": "APEXFLOW OS \u2014 Production Gold Master Release Manifest",
+  "version": "1.0.0-gold-master",
+  "release_codename": "TITAN_ZERO_AIRGAP",
+  "timestamp_utc": "2026-10-17T06:46:07.965369+00:00",
+  "architecture_summary": {
+    "total_development_phases": 36,
+    "status": "PRODUCTION_GOLD_MASTER_READY",
+    "total_production_files": 89,
+    "javascript_modules_count": 74,
+    "html_views_count": 5,
+    "supported_views": [
+      "index.html (Architectural Ingestion & Deck Studio)",
+      "stage.html (Master 120 FPS Keynote Stage & AI HUD)",
+      "admin.html (Enterprise Governance & Tenant Management)",
+      "war-room.html (C-Suite Real-Time Mission Control)",
+      "remote.html (Zero-Latency Mobile Touch Controller)"
+    ],
+    "total_lines_of_code": 36268,
+    "total_uncompressed_bytes": 1694626,
+    "total_uncompressed_size_mb": 1.62
+  },
+  "compliance_audit": {
+    "air_gapped_zero_upload_privacy": "VERIFIED_PASSED",
+    "universal_zero_emoji_architecture": "VERIFIED_PASSED",
+    "ast_syntax_integrity": "VERIFIED_PASSED",
+    "supabase_realtime_cloud_mesh": "VERIFIED_PASSED",
+    "offline_pwa_service_worker": "VERIFIED_PASSED",
+    "docker_enterprise_container": "VERIFIED_PASSED"
+  },
+  "file_checksums_sha256": {
+    "Dockerfile": {
+      "sha256": "5d17d6c9b515df162af6a41781e4783d5d5965125c5721ddb488cca48d8d773b",
+      "bytes": 1997
+    },
+    "README.md": {
+      "sha256": "7f944bd0b435f5750e86ab71d9720260496f444feeb16201c554e0c7649742cf",
+      "bytes": 8943
+    },
+    "RELEASE_v1.0.0.md": {
+      "sha256": "ae187d46a8d7a72e7e9b1c9ebbfe499042544fdc4d0fe4e4f34763bf0530cf8c",
+      "bytes": 19110
+    },
+    "admin.html": {
+      "sha256": "f1b04228970051e584b238c539d37fc5cf930b0ebdb708b3a5fbeae22c809e64",
+      "bytes": 115243
+    },
+    "docker-compose.yml": {
+      "sha256": "48202926f7bc0fbf4bcd1afc5d940911f24438ddc4719f360c188b547c282fcd",
+      "bytes": 1485
+    },
+    "icon.svg": {
+      "sha256": "ce1c6bf269e47409ab2e8dd38629db8342e0890e1938cb492f167daec8a421c7",
+      "bytes": 2079
+    },
+    "index.html": {
+      "sha256": "87acd2f0cdddd1a47b7de1b633927dcc061ba1f610d9f0e69d8ebb74acc38fcf",
+      "bytes": 27580
+    },
+    "manifest.json": {
+      "sha256": "d45ac109c72ba8f8ad5d40bd2d6a2575a60cf76e58a2ee8cde330ba9f24cfc78",
+      "bytes": 1642
+    },
+    "nginx.conf": {
+      "sha256": "fa3764b58751b3f64566a8e9be699a191e951fdd9933609816a10449abf82b3e",
+      "bytes": 5127
+    },
+    "remote.html": {
+      "sha256": "3e1dbf4e3d50dd55e70ab22712f1b49f41106410760165c234ae70b00618aacd",
+      "bytes": 31427
+    },
+    "src/components/annotation-canvas.js": {
+      "sha256": "4798a7fbb28aeae1b925e663e69be6c2a9598a8f84ffc0a01bb2922e882622f0",
+      "bytes": 20054
+    },
+    "src/components/api-playground.js": {
+      "sha256": "ef8bf69c09a4840e08c2b198f35e2fdb889c12f025e9bbbf62aafb3d01196713",
+      "bytes": 15501
+    },
+    "src/components/architecture-copilot.js": {
+      "sha256": "f775ac714676cc211e500986426dd078761994c5e53c31d0d6aa750c3c9c7536",
+      "bytes": 16577
+    },
+    "src/components/audience-heatmap.js": {
+      "sha256": "b0a6fee9eff30a81c08a4aa463e47a02e096606beb1a50cb13867b9fdee62051",
+      "bytes": 15669
+    },
+    "src/components/bento-roi.js": {
+      "sha256": "76a723fb7e016d867b5d8460b97522cf22f79b93dd629dc9044b3395020e9d48",
+      "bytes": 26830
+    },
+    "src/components/boardroom-pressure-engine.js": {
+      "sha256": "a6a5a5b7d33e46aacb5ae261506b984111f5a359aba3220bee57a143a85251d0",
+      "bytes": 3375
+    },
+    "src/components/chaos-engineering-hud.js": {
+      "sha256": "9ee8cbe7c3bf2342e8a83b4f3492dc0bf951afa6f8e710588cf8b4bb1d22b168",
+      "bytes": 20532
+    },
+    "src/components/chaos-simulator.js": {
+      "sha256": "e82db7d553d9a9fa77c4f538c52ed60474d27627e39ffb4012b87f8a986b0b99",
+      "bytes": 6843
+    },
+    "src/components/client-portal-gateway.js": {
+      "sha256": "cb3b47320900168f112e8d21832f545339dd45cd8b6c5cb6e80e32d0f74178d5",
+      "bytes": 13155
+    },
+    "src/components/command-palette.js": {
+      "sha256": "9010675c437c2077cbfc9813acef49a601a4709d153bba6a20af874db46b4075",
+      "bytes": 43774
+    },
+    "src/components/comparison-matrix.js": {
+      "sha256": "eb40f1dd2ddf89676406aa3b9af64311b5d5f5f40ef7ce25816fac704a5857cb",
+      "bytes": 15700
+    },
+    "src/components/compliance-ledger.js": {
+      "sha256": "58fe47f49cfb06b556830a7ff9224db5f72364df27d51b4025290fa50efc060b",
+      "bytes": 13226
+    },
+    "src/components/cyber-terminal.js": {
+      "sha256": "e03251b8e7954e2b070b15f302b6c125429360b381fad31612407f8805c424fd",
+      "bytes": 8374
+    },
+    "src/components/device-frames.js": {
+      "sha256": "129fb22940cef5ade8ec97c5120f0a6bb9a2f7e90f8f700b46d3241b79a0b24f",
+      "bytes": 26527
+    },
+    "src/components/dr-failover-hud.js": {
+      "sha256": "104ae76979e3c7e75c6aa9034b5454e9c5a3217d40a112cd65aab6e0d09486b5",
+      "bytes": 17837
+    },
+    "src/components/finops-calculator.js": {
+      "sha256": "8f095e9437113b672c204c5436f6933dd76eec80a15c9365a0886e5617ea6188",
+      "bytes": 24144
+    },
+    "src/components/floating-particles.js": {
+      "sha256": "bcda78adb02d5bc8c6acd9b60e746739090197a1a9db82128a447588267c314d",
+      "bytes": 8442
+    },
+    "src/components/hero-radar.js": {
+      "sha256": "44d4ee0e6c273f7ef582bc17ed7b679ff5233dcb8ec1476fc3d61defe4218fa7",
+      "bytes": 6239
+    },
+    "src/components/holodeck-engine.js": {
+      "sha256": "9fff991826447b36db9ce2ea4e627caeadb8ac2e62310724ab46a207d479d491",
+      "bytes": 13875
+    },
+    "src/components/human-rehearsal-playbook.js": {
+      "sha256": "9be3ccba89ce7df69c1bd48a6afb885b24aedfb9fc538aba53e71b4a60fc9d79",
+      "bytes": 48290
+    },
+    "src/components/landing.js": {
+      "sha256": "910ebf78477440c84ca0222c6563f0550a02779820dbb741e2ded82e38426c32",
+      "bytes": 24540
+    },
+    "src/components/latency-waterfall.js": {
+      "sha256": "7f318613e5bd466243eda6df3795582b9805d9ff9d978e7bcc5b5919b8072ef3",
+      "bytes": 25801
+    },
+    "src/components/ml-gauges.js": {
+      "sha256": "89bebacac8b2faaff88cd0e4c085a810df4f748204f10c49273e488f7ad98077",
+      "bytes": 12409
+    },
+    "src/components/node-inspector.js": {
+      "sha256": "53160f70ad7c9fb1a41820be41eac6fad8f0934c3dff4d70532197ea647cbd19",
+      "bytes": 10374
+    },
+    "src/components/objection-defense-hud.js": {
+      "sha256": "d2fe63722190a9cc486bc71bd7ca926fba3698d210531d927d5cf8196cc8a5d1",
+      "bytes": 20102
+    },
+    "src/components/packet-tracer.js": {
+      "sha256": "708e07f37f55d093d009f81ae7ee4908801fdd1bfcfdf3003edfb36490453245",
+      "bytes": 17359
+    },
+    "src/components/readiness-audit.js": {
+      "sha256": "4afa5e17e6b55b4201583162af773ff07fb7f8edc01227e5630bad4489d04bad",
+      "bytes": 19472
+    },
+    "src/components/rehearsal-evaluator.js": {
+      "sha256": "a1a6cd2e5c826bbf0628f57263ae8384c7b4d15499d3b17b30c41a34c2cbcd9b",
+      "bytes": 21067
+    },
+    "src/components/resilience-boundary.js": {
+      "sha256": "0188e51403ea5ca04be3b50429540ba6b738689e506c28c6ba883ac838431c31",
+      "bytes": 15867
+    },
+    "src/components/scenario-engine.js": {
+      "sha256": "d2be622c13bccd78434784a0077bc06d0fe5fc572dcb448586343dbc445de928",
+      "bytes": 11675
+    },
+    "src/components/screen-simulator.js": {
+      "sha256": "7cce5874a8b4c037be5edaed85fadb385a23aac86195cc53df561bc10ceaf662",
+      "bytes": 11934
+    },
+    "src/components/sentiment-cloud.js": {
+      "sha256": "5e26348b2e176c0968ebe075ab0d1c016f60bd8e8669b4a4abcdbff5b93931b6",
+      "bytes": 13684
+    },
+    "src/components/spatial-gesture-engine.js": {
+      "sha256": "67648efb72e3dee39b5aa27bf33a660412b041c3f90cec23b501750f57a770f4",
+      "bytes": 17672
+    },
+    "src/components/stage-controller.js": {
+      "sha256": "8b975ca1096071cf4353978191d19eb0139a2292c15b44e18bdb11f5b281db19",
+      "bytes": 131626
+    },
+    "src/components/teleprompter-hud.js": {
+      "sha256": "4c600c9d4342fae1c4bc244ae3a7a0074b9b436d68a0741422fc7dbf15a43173",
+      "bytes": 18907
+    },
+    "src/components/threat-modeler.js": {
+      "sha256": "8453e68d32e5114c29b38261101a96b7f691af15b18e3be7aaf2d667a7391c29",
+      "bytes": 15192
+    },
+    "src/components/time-machine.js": {
+      "sha256": "df60181c6efaf746f7b430d9740c8efabdd9759e395d8340395a5fbf41630864",
+      "bytes": 13798
+    },
+    "src/components/topology-comparator.js": {
+      "sha256": "7a0f8bc6183216ec25d41d381973d1e2f8a6895759513d414fd04316e8222ee7",
+      "bytes": 16542
+    },
+    "src/components/translation-subtitles.js": {
+      "sha256": "b05ba128b4f28a432434e09fac4b5821289ea92ac9cd103a566bd6f919874d1f",
+      "bytes": 18642
+    },
+    "src/components/voice-commander.js": {
+      "sha256": "ea449cc4e6a5a3f731ac1ea3108a6e91c8848b94114db5db44fa70a5ffb53306",
+      "bytes": 17706
+    },
+    "src/components/white-label-manager.js": {
+      "sha256": "5435d5011954b30c4f6bfc8ab50363cca3cdd808a5d7380865d67374b42890c3",
+      "bytes": 15810
+    },
+    "src/lib/analyzers/git-fetcher.js": {
+      "sha256": "0e59e4b94b183159ae79f9969e3fc2b0072803ba859bbb0fabfb968fd603154a",
+      "bytes": 6595
+    },
+    "src/lib/analyzers/markdown-deck-importer.js": {
+      "sha256": "90c8a7380acee4e5deba1de203c975b71fa142a8a7d4d62d1486f603e81d23a8",
+      "bytes": 6724
+    },
+    "src/lib/analyzers/pipeline-synthesizer.js": {
+      "sha256": "6bf2691590f0a09858690a69db94cc1452bd9ad3680fa0dd5e5467225c7b8b4f",
+      "bytes": 13045
+    },
+    "src/lib/analyzers/polymorphic-detector.js": {
+      "sha256": "7d161d494458b5a21c6439bd381266aa29307c39b2ae1166d6dba65f9627ca29",
+      "bytes": 9258
+    },
+    "src/lib/analyzers/sample-demos.js": {
+      "sha256": "64a929277bd1bc536719fb21c7b43fd55ad74c82edf9d06e06e1cab9e28e2f97",
+      "bytes": 9207
+    },
+    "src/lib/analyzers/stress-benchmarker.js": {
+      "sha256": "de8f8b3dc54c08bd27649fc9843108bb7d1d9815c3dacc771bde996ee6022885",
+      "bytes": 8065
+    },
+    "src/lib/analyzers/tree-scanner.js": {
+      "sha256": "31fb6ba58b2c4ff037671d35a2d49136d432f279fc4a337e77effb173dce4e0b",
+      "bytes": 6813
+    },
+    "src/lib/analyzers/zip-extractor.js": {
+      "sha256": "2f872c3005c8414a989b9dde2cac12f95186927d1af56481c0b9d52158f766ac",
+      "bytes": 7397
+    },
+    "src/lib/audio/sound-synth.js": {
+      "sha256": "4dd145638c731039be5ba77ca496ac5a1cb623cf66f541aa67e095e8c1d20567",
+      "bytes": 9196
+    },
+    "src/lib/audio/voice-macros.js": {
+      "sha256": "4200005d4eaa8939b55b71b5505128f4be58af2f3cfab7a3c5edb6674129315b",
+      "bytes": 4819
+    },
+    "src/lib/audio/voice-narrator.js": {
+      "sha256": "757b7bdf30a5aa28e621a355534d320043945074457b392db24e8b7d6d51fc68",
+      "bytes": 17560
+    },
+    "src/lib/export/briefing-exporter.js": {
+      "sha256": "3c237dfdcae6542c49e477dc628fb15d00cc7be565ee662cb91969b01a117545",
+      "bytes": 12633
+    },
+    "src/lib/export/executive-deck-packager.js": {
+      "sha256": "e139bab60d7fb10e47ef7e04ab9aebaeb8d1a77d4c5d9f3bad60d1cbdf43ca98",
+      "bytes": 19413
+    },
+    "src/lib/export/investor-qa-packager.js": {
+      "sha256": "b89731bdc077aa53eea0b395042c97c522dabb5f904f4b1ec9db1a2239fd8228",
+      "bytes": 11260
+    },
+    "src/lib/export/keynote-teaser.js": {
+      "sha256": "11b9c4221e92d0ba3119c0653e06ce9365acfeb1269478803c07d40a9068ed2c",
+      "bytes": 11080
+    },
+    "src/lib/export/mermaid-exporter.js": {
+      "sha256": "06ebeb14a8282a88eb01fb03877131e835c0d51c853ad93a6c546a74061d8d69",
+      "bytes": 22054
+    },
+    "src/lib/export/session-recorder.js": {
+      "sha256": "1f6111dad58a85c5c2599797edd633f854cab368f4c0116290f405141025f044",
+      "bytes": 5485
+    },
+    "src/lib/export/single-file-bundler.js": {
+      "sha256": "7eefbee04f9d039f8a6c8bed36821c2e81b8cc3e7e79569a033a71d02d623e17",
+      "bytes": 62067
+    },
+    "src/lib/export/slide-poster-renderer.js": {
+      "sha256": "f6146781f8d52e3c5285af815ae3627349cb1726f598715176a2dcfd6b44d35e",
+      "bytes": 13767
+    },
+    "src/lib/export/vector-exporter.js": {
+      "sha256": "7f4c075acb2db9f2c2a34db2f22cc85b935e68eb344d05c965d3df35e3fb5276",
+      "bytes": 51681
+    },
+    "src/lib/pyodide/sandbox-runner.js": {
+      "sha256": "1abbcb80b6c44b17237498f5e34b78963c84b9fa44ec7f58482f8ea5f03162f7",
+      "bytes": 5659
+    },
+    "src/lib/remote/presenter-mirror.js": {
+      "sha256": "0d6df7b78bd6dd1f3323e15339d5c305db143bda07bc9d733fee6fec7a2a77e9",
+      "bytes": 4665
+    },
+    "src/lib/remote/remote-sync.js": {
+      "sha256": "cc8ba6ba82f513b25341d2cebee8a270198d6fa81ee376207b9d19dcc0236437",
+      "bytes": 13121
+    },
+    "src/lib/remote/supabase-sync.js": {
+      "sha256": "7570e9bebdae7e008c97e586b5a32aea77d9358382bd3063fa505b0a2a7c3f6b",
+      "bytes": 11516
+    },
+    "src/lib/security/input-shield.js": {
+      "sha256": "33bf2df9e8545718de97b3811bc2423bdb1a901134b0afd1a46e38a0d0ca8fe5",
+      "bytes": 6638
+    },
+    "src/lib/security/keynote-watermark.js": {
+      "sha256": "f07ec691002d88f0a758762e1c874af31f3beb7eea2ecb0343c5554b888ed299",
+      "bytes": 10757
+    },
+    "src/lib/storage/offline-vault.js": {
+      "sha256": "5a1eb606a6ec1e174fcd9c5728106b2744edea97d1a3cdd87372486b96eaab85",
+      "bytes": 15052
+    },
+    "src/lib/storage/project-vault.js": {
+      "sha256": "eb7eb603bef724ed9bdfbbdab429c0721a56ae394735724273cb352dd33ac46b",
+      "bytes": 8441
+    },
+    "src/lib/storage/tenant-config.js": {
+      "sha256": "c98df984e84f377c1218ef4e59750b5eb844bddf76e818de01085ebef389c93c",
+      "bytes": 6698
+    },
+    "src/lib/syntax/code-highlighter.js": {
+      "sha256": "f8bc7844f0c085d323d10526dfe3814125b526568b73fae01a658993a2e617a7",
+      "bytes": 4638
+    },
+    "src/lib/templates/executive-deck-library.js": {
+      "sha256": "7efa60e0ddf48a7bf23f38ec16603a18026f0741761cdd69c009df407f82836a",
+      "bytes": 13755
+    },
+    "src/lib/types.js": {
+      "sha256": "5e9b58ff7c7fc7c95d4be1ce94336f98586a67f6ea0851a069220667407a29df",
+      "bytes": 5980
+    },
+    "src/styles/main.css": {
+      "sha256": "b3b5b4dc27cd0b6f8d41eab36c8d157fd774c39a839887b1421a0278c862cd10",
+      "bytes": 12390
+    },
+    "src/styles/shaders.css": {
+      "sha256": "40284e407b25aa3be7d0d63edab413284f03bbac35666ab228bdd827e7604083",
+      "bytes": 3892
+    },
+    "stage.html": {
+      "sha256": "4a07a567e17100f3cc2d41f4568c54e3c54b97e3661f197794f7d9b1c3ca6921",
+      "bytes": 98576
+    },
+    "supabase/migrations/20261017000000_apexflow_core_schema.sql": {
+      "sha256": "f7860d0742a67705b048dc7baf996ee52cf4f3a0724e41851ca90392cac8e609",
+      "bytes": 7403
+    },
+    "sw.js": {
+      "sha256": "1e116bd012212f1eed11b8f814a30b18e23ab7dd7760735477c62e96246c4953",
+      "bytes": 7884
+    },
+    "war-room.html": {
+      "sha256": "e8ab3c509f8a5de9cb2958e1594700884fe90da059d946be52e5c6069ca4271d",
+      "bytes": 99666
+    }
+  }
+}

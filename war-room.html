@@ -1,0 +1,1803 @@
+<!DOCTYPE html>
+<!--
+  =========================================================================================
+  MODULE: APEXFLOW OS — Presenter Dual-Screen War Room, Objection Matrix & Clock Bridge
+  -----------------------------------------------------------------------------------------
+  [PAGE HIGHLIGHT: war-room.html — C-Suite Supabase Realtime Telemetry Relay & Executive HUD]
+  -----------------------------------------------------------------------------------------
+  ARCHITECTURAL ROLE:
+  Private executive command HUD opened on presenter's second monitor (Hotkey: 'P').
+  Provides executive presenters with:
+    1. Real-Time Stage Progression Roadmap with one-click remote jump (via RemoteSync)
+    2. Dynamic Teleprompter displaying AI-synthesized talking points & stage hooks
+    3. Web Speech API Speech Pacing Coach & Real-Time Filler Word Detector (WPM, Pitch Cadence Radar, um/uh/like/actually/basically counters & Clarity Score)
+    4. Executive Q&A Defense Matrix: 10+ categorized client objections, instant search filter,
+       1-click answer copy, and "Whisper to Stage" HUD dispatch
+    5. Audience Live Q&A Stream & Stage Spotlight (T049): live question voting & 1-click spotlight
+    6. Synchronized Presenter Timer & Clock Bridge: Stopwatch & Countdown Pitch modes (5m, 10m,
+       15m, 20m) with live BroadcastChannel synchronization to the main stage canvas
+    7. AI Pitch Copilot & Dynamic Q&A Rebuttal Matrix (T070): Stage contextual cheat sheet,
+       Sequoia/a16z hard-question defense, 3-part framework synthesizers & 1-click stage whisper
+    8. Supabase Realtime Telemetry Relay (Task T186): Multi-tenant cloud synchronization,
+       live global audience reaction ingestion, and zero-upload air-gap fallback
+  
+  UI/UX PRO MAX INTELLIGENCE:
+    - Zero distraction dark luxury OLED `#04060A` palette
+    - Tabular font figures for zero-jitter telemetry counters
+    - Real-time bidirectional stage sync via BroadcastChannel & Supabase Realtime
+  =========================================================================================
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>APEXFLOW OS — Presenter War Room Console</title>
+  
+  <!-- Autonomous Offline PWA Manifest & Icons (Task T104) -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml" href="icon.svg">
+  <meta name="theme-color" content="#00F0FF">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="src/styles/main.css">
+  <link rel="stylesheet" href="src/styles/shaders.css">
+  
+  <style>
+    .filter-pill {
+      font-size: 10px;
+      font-family: var(--font-mono);
+      padding: 3px 8px;
+      border-radius: 9999px;
+      border: 1px solid #1E2D44;
+      background: #090F1A;
+      color: #94A3B8;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .filter-pill.active {
+      background: rgba(0, 240, 255, 0.15);
+      border-color: #00F0FF;
+      color: #00F0FF;
+    }
+    .objection-card {
+      border: 1px solid #162438;
+      border-radius: 8px;
+      padding: 12px;
+      background: #080E1B;
+      transition: border-color 0.15s ease;
+    }
+    .objection-card:hover {
+      border-color: #2A3E5C;
+    }
+    .btn-whisper {
+      background: rgba(168, 85, 247, 0.12);
+      border: 1px solid rgba(168, 85, 247, 0.4);
+      color: #C084FC;
+      font-size: 10px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: var(--font-mono);
+      transition: all 0.15s ease;
+    }
+    .btn-whisper:hover {
+      background: rgba(168, 85, 247, 0.25);
+      color: #F8FAFC;
+      border-color: #A855F7;
+    }
+    .btn-copy-ans {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid #1E2D44;
+      color: #94A3B8;
+      font-size: 10px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: var(--font-mono);
+      transition: all 0.15s ease;
+    }
+    .btn-copy-ans:hover {
+      color: #F8FAFC;
+      border-color: #64748B;
+    }
+    @keyframes pulseOvertime {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.75; transform: scale(1.02); }
+    }
+    .timer-overtime {
+      color: #EF4444 !important;
+      animation: pulseOvertime 1s infinite ease-in-out;
+    }
+    .timer-warning {
+      color: #F59E0B !important;
+    }
+    .filler-chip.active-chip {
+      background: rgba(245, 158, 11, 0.15) !important;
+      border-color: rgba(245, 158, 11, 0.5) !important;
+      color: #F59E0B !important;
+      box-shadow: 0 0 8px rgba(245, 158, 11, 0.2);
+    }
+  </style>
+</head>
+<body style="background: #04060A; color: #F8FAFC; height: 100vh; overflow: hidden; display: flex; flex-direction: column; font-family: var(--font-sans);">
+
+  <!-- War Room Header -->
+  <header style="height: 58px; border-bottom: 1px solid var(--border-subtle); background: #080D18; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; flex-shrink: 0;">
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <span class="cyber-badge badge-rose" style="color: #EF4444; border-color: #EF4444; font-size: 11px;">
+        ● ON AIR (PRESENTER HUD)
+      </span>
+      <span id="warRoomTitle" style="font-weight: 700; font-size: 14px; color: #F8FAFC; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+        Project Console
+      </span>
+      <span id="warRoomArchetype" class="cyber-badge badge-cyan" style="font-size: 10px;">
+        TYPE_B
+      </span>
+      <!-- [PAGE HIGHLIGHT: war-room.html — Supabase Cloud Mesh Status Pill] -->
+      <span id="warSupabaseSyncBadge" class="cyber-badge" style="font-size: 10px; padding: 2px 8px; color: #38BDF8; border-color: #38BDF8; display: inline-flex; align-items: center; gap: 4px;" title="Supabase Cloud Mesh Status (Opt-in Multi-Tenant Sync)">
+        <span id="warSupabaseStatusDot" style="width: 6px; height: 6px; border-radius: 50%; background: #38BDF8; display: inline-block;"></span>
+        <span id="warSupabaseStatusText">AIR-GAP LOCAL</span>
+      </span>
+    </div>
+
+    <!-- Center Stage Navigator Shortcuts -->
+    <div style="display: flex; gap: 8px; align-items: center;">
+      <button id="btnWarPrev" class="btn btn-secondary" style="height: 32px; font-size: 11px;">
+        ← Prev Stage
+      </button>
+      <button id="btnWarNext" class="btn btn-primary" style="height: 32px; font-size: 11px;">
+        Next Stage →
+      </button>
+    </div>
+
+    <!-- Right Timer & Actions: Synchronized Clock Bridge -->
+    <div style="display: flex; align-items: center; gap: 14px;">
+      <!-- Timer Mode Selector -->
+      <select id="timerModeSelect" style="background: #090F1A; border: 1px solid #1E2D44; color: #94A3B8; font-size: 11px; font-family: var(--font-mono); border-radius: 6px; height: 32px; padding: 0 8px;">
+        <option value="stopwatch">Stopwatch (Count Up)</option>
+        <option value="300">5m Lightning Pitch</option>
+        <option value="600">10m Executive Briefing</option>
+        <option value="900" selected>15m Master Keynote</option>
+        <option value="1200">20m Technical Deep-Dive</option>
+      </select>
+
+      <!-- Timer Display -->
+      <div style="display: flex; align-items: baseline; gap: 6px; background: #070B14; border: 1px solid #1E2D44; padding: 4px 10px; border-radius: 6px;">
+        <span style="font-size: 10px; color: #64748B; font-family: var(--font-mono);" id="timerLabel">CLOCK:</span>
+        <div style="font-family: var(--font-mono); font-size: 17px; font-weight: 700; color: #00F0FF; min-width: 65px; text-align: right;" id="stageTimer">
+          15:00
+        </div>
+      </div>
+
+      <!-- Timer Controls -->
+      <div style="display: flex; gap: 4px;">
+        <button id="btnTimerToggle" class="btn btn-secondary" style="height: 32px; width: 34px; padding: 0; display: inline-flex; align-items: center; justify-content: center;" title="Play / Pause">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+        </button>
+        <button id="btnTimerReset" class="btn btn-secondary" style="height: 32px; width: 34px; padding: 0; display: inline-flex; align-items: center; justify-content: center;" title="Reset Clock">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        </button>
+      </div>
+
+      <button onclick="window.close()" class="btn btn-secondary" style="height: 32px; font-size: 11px; margin-left: 4px; display: inline-flex; align-items: center; gap: 5px;">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        <span>Close</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- War Room Main Grid -->
+  <main style="flex: 1; display: grid; grid-template-columns: 290px 1fr 380px; gap: 14px; padding: 14px; overflow: hidden;">
+    
+    <!-- Left Column: Stage Progression Roadmap -->
+    <div class="cyber-card" style="padding: 14px; display: flex; flex-direction: column; background: #070B14;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h3 style="font-size: 12px; font-weight: 700; color: #00F0FF; text-transform: uppercase; font-family: var(--font-mono); margin: 0;">
+          Stage Progression
+        </h3>
+        <span style="font-size: 10px; color: #64748B;">Click to Jump</span>
+      </div>
+
+      <div id="roadmapList" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
+        <div class="cyber-card roadmap-stage-card" data-stage="0" style="padding: 10px; cursor: pointer; border-color: #00F0FF; background: rgba(0,240,255,0.08);">
+          <div style="display: flex; justify-content: space-between;">
+            <span style="font-size: 10px; color: #00F0FF; font-weight: 700;">STAGE 1 • HERO</span>
+            <span style="font-size: 10px; color: #10B981;">● CURRENT</span>
+          </div>
+          <div style="font-size: 12px; font-weight: 600; margin-top: 2px;">Cinematic Hero & Radar</div>
+        </div>
+
+        <div class="cyber-card roadmap-stage-card" data-stage="1" style="padding: 10px; cursor: pointer;">
+          <div style="font-size: 10px; color: #64748B; font-weight: 700;">STAGE 2 • ARCHITECTURE</div>
+          <div style="font-size: 12px; font-weight: 600; margin-top: 2px;">2D Pipeline & 3D Holodeck</div>
+        </div>
+
+        <div class="cyber-card roadmap-stage-card" data-stage="2" style="padding: 10px; cursor: pointer;">
+          <div style="font-size: 10px; color: #64748B; font-weight: 700;">STAGE 3 • EXECUTION</div>
+          <div style="font-size: 12px; font-weight: 600; margin-top: 2px;">Pyodide Sandbox & Terminal</div>
+        </div>
+
+        <div class="cyber-card roadmap-stage-card" data-stage="3" style="padding: 10px; cursor: pointer;">
+          <div style="font-size: 10px; color: #64748B; font-weight: 700;">STAGE 4 • DEVICES</div>
+          <div style="font-size: 12px; font-weight: 600; margin-top: 2px;">Apple Pro Display & iPhone 16</div>
+        </div>
+
+        <div class="cyber-card roadmap-stage-card" data-stage="4" style="padding: 10px; cursor: pointer;">
+          <div style="font-size: 10px; color: #64748B; font-weight: 700;">STAGE 5 • ROI</div>
+          <div style="font-size: 12px; font-weight: 600; margin-top: 2px;">Bento Impact & Before/After</div>
+        </div>
+
+        <div class="cyber-card roadmap-stage-card" data-stage="5" style="padding: 10px; cursor: pointer;">
+          <div style="font-size: 10px; color: #64748B; font-weight: 700;">STAGE 6 • AUDIENCE</div>
+          <div style="font-size: 12px; font-weight: 600; margin-top: 2px;">QR Remote & Webhooks</div>
+        </div>
+      </div>
+
+      <!-- High-Precision Presenter Mirror: Next Slide Preview (Task T089) -->
+      <div id="mirrorNextSlideCard" style="margin-top: 10px; background: rgba(0, 240, 255, 0.04); border: 1px dashed rgba(0, 240, 255, 0.35); border-radius: 8px; padding: 10px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+          <span style="font-size: 9px; font-family: var(--font-mono); color: #00F0FF; font-weight: 700; letter-spacing: 0.05em; display: inline-flex; align-items: center; gap: 4px;">
+            <span>NEXT SLIDE PEEK</span>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19" stroke="currentColor" stroke-width="2.5"/></svg>
+          </span>
+          <span style="font-size: 9px; color: #10B981; font-family: var(--font-mono);">MIRROR SYNC</span>
+        </div>
+        <div id="mirrorNextSlideTitle" style="font-size: 12px; font-weight: 600; color: #F8FAFC; line-height: 1.3;">
+          Living Architecture & 3D Holodeck
+        </div>
+      </div>
+    </div>
+
+    <!-- Center Column: Teleprompter & AI Talking Points -->
+    <div class="cyber-card" style="padding: 20px; display: flex; flex-direction: column; background: #070B14;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+        <span class="cyber-badge badge-violet" style="font-size: 10px;">TELEPROMPTER & PRESENTER SCRIPT</span>
+        <div style="display: flex; gap: 6px;">
+          <button id="btnTextSmaller" class="btn btn-secondary" style="height: 24px; padding: 0 7px; font-size: 11px;">A-</button>
+          <button id="btnTextLarger" class="btn btn-secondary" style="height: 24px; padding: 0 7px; font-size: 11px;">A+</button>
+        </div>
+      </div>
+      
+      <div id="teleprompterContainer" style="flex: 1; overflow-y: auto; font-size: 16px; line-height: 1.8; color: #E2E8F0; padding-right: 10px;">
+        <div style="background: rgba(0,240,255,0.05); border-left: 3px solid #00F0FF; padding: 12px 14px; margin-bottom: 16px; border-radius: 0 8px 8px 0;">
+          <strong style="color: #00F0FF; display: block; margin-bottom: 4px; font-size: 13px;">STAGE 1: OPENING HOOK (First 60 Seconds)</strong>
+          "Welcome everyone. What you see on screen is not a static PDF or generic slide deck—it is the active, running architecture of our software pipeline. Built with 100% zero-upload client privacy, our code never leaves this machine."
+        </div>
+
+        <div style="background: rgba(168,85,247,0.05); border-left: 3px solid #A855F7; padding: 12px 14px; margin-bottom: 16px; border-radius: 0 8px 8px 0;">
+          <strong style="color: #A855F7; display: block; margin-bottom: 4px; font-size: 13px;">STAGE 2 & 3: ARCHITECTURE & RUNTIME EXECUTION</strong>
+          "Notice the photon data lines connecting each service blade. In a moment, press '3' to orbit inside the 3D Holodeck starfield. When we simulate inbound webhooks, Pyodide compiles and executes in browser memory at sub-millisecond speeds."
+        </div>
+
+        <div style="background: rgba(16,185,129,0.05); border-left: 3px solid #10B981; padding: 12px 14px; margin-bottom: 16px; border-radius: 0 8px 8px 0;">
+          <strong style="color: #10B981; display: block; margin-bottom: 4px; font-size: 13px;">STAGE 5 & 6: ENTERPRISE ROI & AUDIENCE CLOSING</strong>
+          "By deploying this autonomous workflow, our team reclaims 35 engineering hours per week—saving over $136,000 annually. Scan the QR code on your phones to send live reactions or trigger test webhooks directly into our terminal."
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Speech Pacing Coach & Executive Objection Matrix -->
+    <div style="display: flex; flex-direction: column; gap: 12px; overflow: hidden;">
+      
+      <!-- Speaking Pace Coach & Clarity Radar (Task T065) -->
+      <div class="cyber-card" style="padding: 14px; background: #070B14; flex-shrink: 0;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <h3 style="font-size: 11px; font-family: var(--font-mono); color: #10B981; margin: 0; text-transform: uppercase; display: flex; align-items: center; gap: 6px;">
+            <span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #10B981; box-shadow: 0 0 8px #10B981;"></span>
+            Speech Pacing & Clarity Radar
+          </h3>
+          <div style="display: flex; gap: 6px; align-items: center;">
+            <span id="speechClarityBadge" class="cyber-badge badge-emerald" style="font-size: 9px;">99% CRISP</span>
+            <span id="coachPaceBadge" class="cyber-badge badge-emerald" style="font-size: 9px;">OPTIMAL</span>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px;">
+          <div>
+            <div style="font-size: 26px; font-weight: 800; font-family: var(--font-mono); color: #10B981; line-height: 1;" id="liveWpmCounter">
+              138 <span style="font-size: 11px; color: #64748B;">WPM</span>
+            </div>
+            <div style="font-size: 9px; font-family: var(--font-mono); color: #64748B; margin-top: 3px;">
+              Target: <span style="color: #94A3B8;">125–150 WPM</span>
+            </div>
+          </div>
+
+          <div style="text-align: right;">
+            <div id="fillerTotalBadge" style="font-size: 13px; font-weight: 700; font-family: var(--font-mono); color: #10B981;">
+              0 Filler Words
+            </div>
+            <div style="font-size: 9px; color: #64748B; font-family: var(--font-mono);">
+              Status: <span id="fillerCadenceStatus" style="color: #10B981;">Authoritative & Crisp</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dynamic Cadence Visualizer Gauge -->
+        <div style="margin-bottom: 8px;">
+          <div style="display: flex; justify-content: space-between; font-size: 9px; color: #64748B; font-family: var(--font-mono); margin-bottom: 3px;">
+            <span>Vocal Pitch & Cadence Flow</span>
+            <span id="vocalEnergyLabel" style="color: #38BDF8;">Steady Rhythm</span>
+          </div>
+          <div style="display: flex; gap: 3px; height: 8px; align-items: flex-end; background: #0A111F; border-radius: 3px; padding: 1px 3px;">
+            <div class="speech-radar-bar" style="flex: 1; height: 60%; background: #10B981; border-radius: 1px; transition: height 0.2s ease;"></div>
+            <div class="speech-radar-bar" style="flex: 1; height: 85%; background: #10B981; border-radius: 1px; transition: height 0.2s ease;"></div>
+            <div class="speech-radar-bar" style="flex: 1; height: 70%; background: #10B981; border-radius: 1px; transition: height 0.2s ease;"></div>
+            <div class="speech-radar-bar" style="flex: 1; height: 90%; background: #00F0FF; border-radius: 1px; transition: height 0.2s ease;"></div>
+            <div class="speech-radar-bar" style="flex: 1; height: 75%; background: #00F0FF; border-radius: 1px; transition: height 0.2s ease;"></div>
+            <div class="speech-radar-bar" style="flex: 1; height: 65%; background: #10B981; border-radius: 1px; transition: height 0.2s ease;"></div>
+            <div class="speech-radar-bar" style="flex: 1; height: 80%; background: #10B981; border-radius: 1px; transition: height 0.2s ease;"></div>
+            <div class="speech-radar-bar" style="flex: 1; height: 50%; background: #10B981; border-radius: 1px; transition: height 0.2s ease;"></div>
+          </div>
+        </div>
+
+        <!-- Filler Word Counters Chips -->
+        <div style="display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; font-family: var(--font-mono); font-size: 9px;">
+          <span class="filler-chip" id="chipUm" style="padding: 2px 6px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 4px; color: #94A3B8;">
+            um: <strong id="countUm" style="color: #F8FAFC;">0</strong>
+          </span>
+          <span class="filler-chip" id="chipUh" style="padding: 2px 6px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 4px; color: #94A3B8;">
+            uh: <strong id="countUh" style="color: #F8FAFC;">0</strong>
+          </span>
+          <span class="filler-chip" id="chipLike" style="padding: 2px 6px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 4px; color: #94A3B8;">
+            like: <strong id="countLike" style="color: #F8FAFC;">0</strong>
+          </span>
+          <span class="filler-chip" id="chipActually" style="padding: 2px 6px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 4px; color: #94A3B8;">
+            actually: <strong id="countActually" style="color: #F8FAFC;">0</strong>
+          </span>
+          <span class="filler-chip" id="chipBasically" style="padding: 2px 6px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 4px; color: #94A3B8;">
+            basically: <strong id="countBasically" style="color: #F8FAFC;">0</strong>
+          </span>
+        </div>
+
+        <!-- Controls: Mic Toggle, Simulate Stream, Reset -->
+        <div style="display: flex; gap: 6px; justify-content: flex-end;">
+          <button id="btnResetSpeechMetrics" class="btn btn-secondary" style="height: 24px; padding: 0 8px; font-size: 9px; display: inline-flex; align-items: center; gap: 4px;" title="Reset filler counts and clear transcript">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            <span>Reset</span>
+          </button>
+          <button id="btnSimulateSpeech" class="btn btn-secondary" style="height: 24px; padding: 0 8px; font-size: 9px; color: #38BDF8; border-color: rgba(56,189,248,0.3); display: inline-flex; align-items: center; gap: 4px;" title="Simulate audio stream with executive speech">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            <span>Test Stream</span>
+          </button>
+          <button id="btnToggleSpeechCoach" class="btn btn-secondary" style="height: 24px; padding: 0 8px; font-size: 9px; display: inline-flex; align-items: center; gap: 4px;">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+            <span>Mic: Active</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Audience Pulse & Sentiment Heatmap HUD (Task T060) -->
+      <div class="cyber-card" style="padding: 14px; background: #070B14; flex-shrink: 0;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <h3 style="font-size: 11px; font-family: var(--font-mono); color: #00F0FF; margin: 0; text-transform: uppercase;">
+            Audience Pulse & Sentiment
+          </h3>
+          <span id="warRoomPulseBadge" class="cyber-badge badge-emerald" style="font-size: 9px;">98% HIGH ENGAGEMENT</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px;">
+          <div style="font-size: 26px; font-weight: 800; font-family: var(--font-mono); color: #00F0FF;" id="warRoomPulseScore">
+            98<span style="font-size: 12px; color: #64748B;">%</span>
+          </div>
+          <div style="display: flex; gap: 8px; font-size: 10px; font-family: var(--font-mono);">
+            <span style="color: #10B981; display: inline-flex; align-items: center; gap: 3px;">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+              <span id="pulseBullishPct">82%</span> Bullish
+            </span>
+            <span style="color: #38BDF8; display: inline-flex; align-items: center; gap: 3px;">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              <span id="pulseCuriousPct">14%</span> Curious
+            </span>
+            <span style="color: #94A3B8; display: inline-flex; align-items: center; gap: 3px;">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="8" y1="15" x2="16" y2="15"/></svg>
+              <span id="pulseNeutralPct">4%</span> Neutral
+            </span>
+          </div>
+        </div>
+        <div style="width: 100%; height: 6px; background: #131E30; border-radius: 3px; overflow: hidden; display: flex;">
+          <div id="warPulseBarBullish" style="width: 82%; background: linear-gradient(90deg, #10B981, #00F0FF); transition: width 0.4s ease;"></div>
+          <div id="warPulseBarCurious" style="width: 14%; background: #38BDF8; transition: width 0.4s ease;"></div>
+          <div id="warPulseBarNeutral" style="width: 4%; background: #64748B; transition: width 0.4s ease;"></div>
+        </div>
+      </div>
+
+      <!-- Right HUD Panel: Objections vs Audience Live Q&A Stream -->
+      <div class="cyber-card" style="flex: 1; padding: 14px; display: flex; flex-direction: column; background: #070B14; overflow: hidden;">
+        
+        <!-- Tab Switcher -->
+        <div style="display: flex; gap: 4px; margin-bottom: 10px;">
+          <button id="btnSwitchObjections" class="btn btn-secondary" style="flex: 1; height: 28px; font-size: 10px; font-family: var(--font-mono); border-color: #00F0FF; color: #00F0FF; background: rgba(0,240,255,0.12); display: inline-flex; align-items: center; justify-content: center; gap: 4px;">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            <span>Objections (10)</span>
+          </button>
+          <button id="btnSwitchQA" class="btn btn-secondary" style="flex: 1; height: 28px; font-size: 10px; font-family: var(--font-mono); display: inline-flex; align-items: center; justify-content: center; gap: 4px;">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <span>Live Q&A (<span id="qaLiveBadge">2</span>)</span>
+          </button>
+          <button id="btnSwitchCopilot" class="btn btn-secondary" style="flex: 1; height: 28px; font-size: 10px; font-family: var(--font-mono); display: inline-flex; align-items: center; justify-content: center; gap: 4px;">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>
+            <span>AI Copilot</span>
+          </button>
+          <button id="btnSwitchPollStudio" class="btn btn-secondary" style="flex: 1; height: 28px; font-size: 10px; font-family: var(--font-mono); display: inline-flex; align-items: center; justify-content: center; gap: 4px;">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+            <span>Live Polls</span>
+          </button>
+        </div>
+
+        <!-- Panel 1: Executive Objection Defense Matrix -->
+        <div id="panelObjections" style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <h3 style="font-size: 11px; font-family: var(--font-mono); color: #F59E0B; margin: 0; text-transform: uppercase;">
+                Defense Matrix
+              </h3>
+              <span id="whisperSentToast" style="font-size: 9px; color: #A855F7; display: none; font-family: var(--font-mono); align-items: center; gap: 3px;">
+                <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                <span>WHISPER SENT!</span>
+              </span>
+            </div>
+            <span class="cyber-badge badge-amber" style="font-size: 9px;">10 CARDS</span>
+          </div>
+
+          <!-- Live Search Filter -->
+          <div style="margin-bottom: 8px;">
+            <input type="text" id="objectionSearch" placeholder="Filter objections (e.g. privacy, cost, latency)..." style="width: 100%; height: 30px; background: #0B1220; border: 1px solid #1E2D44; border-radius: 6px; color: #F8FAFC; padding: 0 10px; font-size: 11px;">
+          </div>
+
+          <!-- Category Filter Pills -->
+          <div style="display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 8px;">
+            <button class="filter-pill active" data-cat="ALL">All</button>
+            <button class="filter-pill" data-cat="SECURITY">Security</button>
+            <button class="filter-pill" data-cat="SCALE">Scale</button>
+            <button class="filter-pill" data-cat="ROI">ROI</button>
+            <button class="filter-pill" data-cat="PERF">Perf</button>
+          </div>
+
+          <!-- Objections List Container -->
+          <div id="objectionsList" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 4px;">
+            <!-- Dynamically populated via JS -->
+          </div>
+        </div>
+
+        <!-- Panel 2: Live Audience Q&A Backchannel (Task T049) -->
+        <div id="panelAudienceQA" style="flex: 1; display: none; flex-direction: column; overflow: hidden;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <h3 style="font-size: 11px; font-family: var(--font-mono); color: #00F0FF; margin: 0; text-transform: uppercase;">
+              Audience Inquiries
+            </h3>
+            <span id="qaSpotlightToast" style="font-size: 9px; color: #10B981; display: none; font-family: var(--font-mono); align-items: center; gap: 3px;">
+              <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              <span>SPOTLIGHT ACTIVE!</span>
+            </span>
+          </div>
+          <div style="font-size: 10px; color: #64748B; margin-bottom: 8px;">
+            Questions received live from connected audience smartphones.
+          </div>
+          <div id="warRoomQuestionsList" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 4px;">
+            <!-- Dynamically populated via JS -->
+          </div>
+        </div>
+
+        <!-- Panel 3: AI Pitch Copilot & Dynamic Q&A Rebuttal Matrix (Task T070) -->
+        <div id="panelCopilot" style="flex: 1; display: none; flex-direction: column; overflow: hidden;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <h3 style="font-size: 11px; font-family: var(--font-mono); color: #C084FC; margin: 0; text-transform: uppercase; display: inline-flex; align-items: center; gap: 5px;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>
+                AI Pitch Copilot
+              </h3>
+              <span id="copilotWhisperToast" style="font-size: 9px; color: #10B981; display: none; font-family: var(--font-mono); align-items: center; gap: 3px;">
+                <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                <span>WHISPER SENT!</span>
+              </span>
+            </div>
+            <span class="cyber-badge badge-violet" style="font-size: 9px;">STAGE INTELLIGENCE</span>
+          </div>
+
+          <!-- Slide Contextual Cheat Sheet Card -->
+          <div style="background: rgba(168, 85, 247, 0.06); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 8px; padding: 10px; margin-bottom: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+              <span id="copilotStageTitle" style="font-size: 11px; font-weight: 700; color: #F8FAFC;">Slide 1: Problem & Vision</span>
+              <button id="btnWhisperCopilotSlide" class="btn-whisper" style="font-size: 9px; padding: 2px 7px; display: inline-flex; align-items: center; gap: 4px;">
+                <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                <span>Whisper Key Stat</span>
+              </button>
+            </div>
+            <div id="copilotStageCheat" style="font-size: 10px; color: #CBD5E1; line-height: 1.4;">
+              • Core Metric: 35 eng hours lost weekly in manual pipeline friction.<br/>
+              • Sequoia Hook: Zero-Upload client runtime eliminates 100% of data governance resistance.<br/>
+              • Strategic Metaphor: "This is Bloomberg Terminal meets Docker for software keynotes."
+            </div>
+          </div>
+
+          <!-- Rebuttal Synthesis Query Bar -->
+          <div style="margin-bottom: 6px;">
+            <input type="text" id="copilotQueryInput" placeholder="Ask Copilot or test objection (e.g., vs AWS native, pricing)..." style="width: 100%; height: 28px; background: #0B1220; border: 1px solid #1E2D44; border-radius: 6px; color: #F8FAFC; padding: 0 10px; font-size: 10px;">
+          </div>
+
+          <!-- Quick Scenario Chips -->
+          <div style="display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 8px;">
+            <button class="filter-pill copilot-pill" data-query="aws">vs AWS Native</button>
+            <button class="filter-pill copilot-pill" data-query="onprem">Air-Gapped</button>
+            <button class="filter-pill copilot-pill" data-query="friction">Migration</button>
+            <button class="filter-pill copilot-pill" data-query="roi">Board ROI</button>
+          </div>
+
+          <!-- Generated Tactical Rebuttal Box -->
+          <div id="copilotRebuttalBox" style="flex: 1; overflow-y: auto; background: #080E1B; border: 1px solid #162438; border-radius: 8px; padding: 10px; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <span id="copilotRebuttalTitle" style="font-size: 11px; font-weight: 700; color: #38BDF8; font-family: var(--font-mono);">
+                  Tactical Rebuttal Formulation
+                </span>
+                <span class="cyber-badge badge-cyan" style="font-size: 8px;">3-PART FRAMEWORK</span>
+              </div>
+              <div id="copilotRebuttalContent" style="font-size: 10px; color: #E2E8F0; line-height: 1.5;">
+                Select a scenario above or type any investor curveball to generate an authoritative 3-part executive response with 1-click stage teleprompter whisper.
+              </div>
+            </div>
+            <div style="display: flex; gap: 6px; justify-content: flex-end; margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 6px;">
+              <button id="btnCopyCopilotRebuttal" class="btn-copy-ans" style="display: inline-flex; align-items: center; gap: 4px;">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                <span>Copy</span>
+              </button>
+              <button id="btnWhisperCopilotRebuttal" class="btn-whisper" style="display: inline-flex; align-items: center; gap: 4px;">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                <span>Whisper to Stage</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel 4: Real-Time Audience Poll Studio (Task T073) -->
+        <div id="panelPollStudio" style="flex: 1; display: none; flex-direction: column; overflow-y: auto; gap: 10px; padding-right: 4px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <h3 style="font-size: 11px; font-family: var(--font-mono); color: #00F0FF; margin: 0; text-transform: uppercase; display: inline-flex; align-items: center; gap: 5px;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+                Audience Poll Studio
+              </h3>
+              <span id="warPollLiveToast" style="font-size: 9px; color: #10B981; display: none; font-family: var(--font-mono); align-items: center; gap: 3px;">
+                <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                <span>UPDATED!</span>
+              </span>
+            </div>
+            <span id="warPollStatusBadge" class="cyber-badge badge-emerald" style="font-size: 9px;">ACTIVE</span>
+          </div>
+
+          <!-- Preset Templates Dropdown -->
+          <div style="background: rgba(0, 240, 255, 0.05); border: 1px solid rgba(0, 240, 255, 0.2); border-radius: 8px; padding: 10px;">
+            <label style="display: block; font-size: 10px; font-family: var(--font-mono); color: #94A3B8; margin-bottom: 4px;">
+              QUICK POLL PRESET TEMPLATES:
+            </label>
+            <select id="warPollPresetSelect" style="width: 100%; height: 30px; background: #0B1220; border: 1px solid #1E2D44; border-radius: 6px; color: #F8FAFC; padding: 0 8px; font-size: 11px; outline: none; cursor: pointer;">
+              <option value="prod_ready">1. Production Readiness: Deploy to Prod vs. Hold</option>
+              <option value="arch_choice">2. Architecture Choice: Event Fabric vs. Monolith</option>
+              <option value="exec_verdict">3. Executive Verdict: Approved for Tier-1 Rollout</option>
+              <option value="custom">4. Custom Question & Options</option>
+            </select>
+          </div>
+
+          <!-- Active Poll Details Box -->
+          <div style="background: #0B1220; border: 1px solid #1E2D44; border-radius: 8px; padding: 10px;">
+            <div style="font-size: 10px; font-family: var(--font-mono); color: #00F0FF; margin-bottom: 4px;">ACTIVE POLL QUESTION:</div>
+            <input type="text" id="warPollQuestionInput" value="Is this architecture ready for Tier-1 Enterprise Production deployment?" style="width: 100%; height: 32px; background: #060A12; border: 1px solid #1A273D; border-radius: 6px; color: #FFFFFF; font-size: 11px; padding: 0 8px; box-sizing: border-box; margin-bottom: 8px;">
+
+            <div style="font-size: 10px; font-family: var(--font-mono); color: #94A3B8; margin-bottom: 4px;">LIVE VOTING RESULTS:</div>
+            <div id="warPollOptionsList" style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px;">
+              <!-- Dynamic live vote bars -->
+            </div>
+
+            <!-- Total Votes & Winner Info -->
+            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 10px; font-family: var(--font-mono); color: #64748B; border-top: 1px solid #1A273D; padding-top: 8px;">
+              <span id="warPollTotalVotes">Total Votes: 81</span>
+              <span id="warPollWinnerNotice" style="color: #10B981; font-weight: 700;"></span>
+            </div>
+          </div>
+
+          <!-- Orchestration Control Buttons -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <button id="btnWarBroadcastPoll" class="btn btn-primary" style="height: 32px; font-size: 10px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: 5px;">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              <span>Push to Phones</span>
+            </button>
+            <button id="btnWarToggleStagePoll" class="btn btn-secondary" style="height: 32px; font-size: 10px; border-color: #00F0FF; color: #00F0FF; display: inline-flex; align-items: center; justify-content: center; gap: 5px;">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              <span>Toggle Stage HUD</span>
+            </button>
+            <button id="btnWarClosePoll" class="btn btn-secondary" style="height: 32px; font-size: 10px; border-color: #10B981; color: #10B981; display: inline-flex; align-items: center; justify-content: center; gap: 5px;">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
+              <span>Close & Winner</span>
+            </button>
+            <button id="btnWarResetPoll" class="btn btn-secondary" style="height: 32px; font-size: 10px; border-color: #EF4444; color: #EF4444; display: inline-flex; align-items: center; justify-content: center; gap: 5px;">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+              <span>Reset Votes</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <script type="module">
+    import { projectVault } from './src/lib/storage/project-vault.js';
+    import { remoteSync, escapeHTML } from './src/lib/remote/remote-sync.js';
+    import { soundEngine } from './src/lib/audio/sound-synth.js';
+    import { presenterMirror } from './src/lib/remote/presenter-mirror.js';
+    import { supabaseRealtime } from './src/lib/remote/supabase-sync.js';
+    import './src/components/resilience-boundary.js';
+
+    // 1. Comprehensive Executive Defense Matrix Data (10 Objections)
+    const OBJECTIONS_DATA = [
+      {
+        id: 'sec-1',
+        cat: 'SECURITY',
+        q: 'Is our intellectual property or proprietary code uploaded to your cloud?',
+        summary: 'Zero-Upload Guarantee: 100% Client-Side memory execution.',
+        ans: 'Zero code leaves this browser. All AST parsing, vector graphing, and Pyodide sandbox execution run directly inside local browser memory via HTML5 File System API and WebAssembly. No telemetry or tokens are ever transmitted.',
+        whisperText: 'Air-Gapped: 100% in-browser memory. Zero code or tokens ever touch an external cloud.'
+      },
+      {
+        id: 'sec-2',
+        cat: 'SECURITY',
+        q: 'Can user simulation scripts escape the Pyodide WebAssembly sandbox?',
+        summary: 'CPython WebAssembly operates inside an isolated browser linear memory memory space.',
+        ans: 'Pyodide runs inside an isolated WebAssembly linear memory pool with zero raw socket or native OS filesystem privileges. It has strictly bounded CPU cycles and cannot traverse the host operating system.',
+        whisperText: 'Pyodide Wasm Sandbox: Isolated linear memory pool, zero host OS/socket access privileges.'
+      },
+      {
+        id: 'scale-1',
+        cat: 'SCALE',
+        q: 'Can this architecture handle 100,000+ concurrent requests/sec without degradation?',
+        summary: 'Stateless edge workers with Redis cluster caching and backpressure streaming.',
+        ans: 'Yes. Our ingress tier uses distributed Cloudflare edge workers with asynchronous queuing. In benchmark stress tests, our pipeline maintained sub-15ms p99 latency under 120,000 req/sec sustained loads.',
+        whisperText: 'Scale Proof: Stateless edge workers + Redis clusters. Sub-15ms p99 at 120k req/sec.'
+      },
+      {
+        id: 'scale-2',
+        cat: 'SCALE',
+        q: 'What happens if a downstream microservice or external vendor API fails?',
+        summary: 'Automated circuit breaking, exponential backoff, and signed audit dead-letter queues.',
+        ans: 'Each service blade is decoupled by an automated circuit breaker. If a downstream node fails, transactions route to dead-letter queues with exponential backoff retries, ensuring zero data loss and 99.98% reliability.',
+        whisperText: 'Resilience: Decoupled circuit breakers + dead-letter replay. 99.98% zero-data-loss.'
+      },
+      {
+        id: 'roi-1',
+        cat: 'ROI',
+        q: 'How do you mathematically prove the $136,000/year cost savings claim?',
+        summary: 'Reclaims 35 engineering hours/wk at $75/hr fully burdened rate.',
+        ans: 'Based on reclaiming 35 hours per week of manual data munging and triage across a 5-person engineering team: 35 hrs × 52 weeks = 1,820 hours saved annually. At a conservative $75/hr blended rate, that equals $136,500 in direct bottom-line cash savings.',
+        whisperText: 'ROI Formula: 35 hrs/wk saved × 52 weeks = 1,820 hrs. At $75/hr = $136,500/yr savings.'
+      },
+      {
+        id: 'roi-2',
+        cat: 'ROI',
+        q: 'What is the implementation timeline and payback period?',
+        summary: 'Payback in under 4.2 months with 2-week drop-in deployment.',
+        ans: 'Because APEXFLOW OS ingests standard repositories with zero required server agent installs, initial deployment takes under 14 business days. Based on client benchmarks, full cost payback is achieved within 4.2 months.',
+        whisperText: 'Time to Value: 14-day zero-agent rollout. Full payback achieved in 4.2 months.'
+      },
+      {
+        id: 'perf-1',
+        cat: 'PERF',
+        q: 'Do audience members or clients need dedicated GPUs to view the 3D Holodeck?',
+        summary: '60-120 FPS WebGL 2.0 instanced rendering optimized for standard laptops & mobile.',
+        ans: 'No. The 3D starfield and crystalline blades utilize hardware-instanced Three.js particle buffers with zero heavy shadow maps, delivering silky 60-120 FPS on integrated Intel/Apple Silicon GPUs and mobile smartphones.',
+        whisperText: 'Hardware Agnostic: WebGL instanced geometry runs 60-120 FPS on standard laptops.'
+      },
+      {
+        id: 'perf-2',
+        cat: 'PERF',
+        q: 'Will 500 simultaneous QR voters overload venue Wi-Fi during the presentation?',
+        summary: 'Ultra-lean WebRTC DataChannel/BroadcastChannel packets (<120 bytes each).',
+        ans: 'Audience reactions are compressed into tiny binary JSON packets of under 120 bytes. Over 500 simultaneous audience votes consume less than 0.05% of standard conference Wi-Fi bandwidth.',
+        whisperText: 'Lean Remote: Binary event packets <120 bytes. Zero strain on venue Wi-Fi.'
+      },
+      {
+        id: 'int-1',
+        cat: 'SECURITY',
+        q: 'Can this presentation run inside air-gapped military/government SCIF facilities?',
+        summary: 'Yes: Exportable as 100% self-contained offline single-file HTML bundle.',
+        ans: 'Yes. Our 1-Click Exporter packages the entire presentation, Three.js shaders, Pyodide scripts, and manifest into a single self-contained offline HTML file that runs from a thumb drive with zero internet connection.',
+        whisperText: 'Air-Gapped Ready: 1-Click export produces 100% standalone offline HTML bundle.'
+      },
+      {
+        id: 'int-2',
+        cat: 'SCALE',
+        q: 'Does this integrate with legacy monolithic codebases or strictly microservices?',
+        summary: 'Universal polymorphic classifier supports 6 distinct archetypes A through F.',
+        ans: 'APEXFLOW OS was specifically engineered for heterogeneous architectures. Our polymorphic analyzer detects full-stack web, event pipelines, backend APIs, data science models, and legacy monolithic constellations automatically.',
+        whisperText: 'Polymorphic Ingestion: Natively classifies 6 archetypes from Monolith to Event Pipeline.'
+      }
+    ];
+
+    // Render Objection Matrix
+    const objectionsContainer = document.getElementById('objectionsList');
+    const searchInput = document.getElementById('objectionSearch');
+    let currentCategory = 'ALL';
+
+    function renderObjections() {
+      const query = (searchInput.value || '').toLowerCase().trim();
+      objectionsContainer.innerHTML = '';
+
+      const filtered = OBJECTIONS_DATA.filter(item => {
+        const matchesCat = (currentCategory === 'ALL' || item.cat === currentCategory);
+        const matchesQuery = !query || item.q.toLowerCase().includes(query) || item.ans.toLowerCase().includes(query) || item.summary.toLowerCase().includes(query);
+        return matchesCat && matchesQuery;
+      });
+
+      if (filtered.length === 0) {
+        objectionsContainer.innerHTML = '<div style="color: #64748B; font-size: 11px; text-align: center; padding: 20px;">No matching objections found</div>';
+        return;
+      }
+
+      filtered.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'objection-card';
+        card.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px;">
+            <span class="cyber-badge badge-amber" style="font-size: 9px; padding: 2px 6px;">${item.cat}</span>
+            <div style="display: flex; gap: 4px;">
+              <button class="btn-copy-ans" title="Copy answer to clipboard" style="display: inline-flex; align-items: center; gap: 3px;">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                <span>Copy</span>
+              </button>
+              <button class="btn-whisper" title="Whisper to Stage Prompter HUD" style="display: inline-flex; align-items: center; gap: 3px;">
+                <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                <span>Whisper</span>
+              </button>
+            </div>
+          </div>
+          <div style="font-weight: 700; font-size: 11.5px; color: #F8FAFC; margin-bottom: 4px; line-height: 1.4;">
+            ${item.q}
+          </div>
+          <div style="font-size: 11px; color: #94A3B8; line-height: 1.5; margin-bottom: 4px;">
+            ${item.ans}
+          </div>
+          <div style="font-size: 10px; color: #00F0FF; font-family: var(--font-mono); border-top: 1px solid rgba(255,255,255,0.06); padding-top: 4px; margin-top: 4px; display: inline-flex; align-items: center; gap: 4px;">
+            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            <span>Hook: "${item.summary}"</span>
+          </div>
+        `;
+
+        // Copy button handler
+        card.querySelector('.btn-copy-ans').addEventListener('click', async () => {
+          soundEngine.playClick();
+          try {
+            await navigator.clipboard.writeText(item.ans);
+            const btn = card.querySelector('.btn-copy-ans');
+            btn.innerHTML = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> <span>Copied!</span>';
+            setTimeout(() => {
+              btn.innerHTML = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> <span>Copy</span>';
+            }, 1500);
+          } catch (e) {}
+        });
+
+        // Whisper button handler
+        card.querySelector('.btn-whisper').addEventListener('click', () => {
+          soundEngine.playSuccess();
+          remoteSync.sendPresenterWhisper({
+            title: item.q,
+            text: item.whisperText,
+            category: item.cat,
+            autoDismissSec: 14
+          });
+
+          const toast = document.getElementById('whisperSentToast');
+          toast.style.display = 'inline';
+          setTimeout(() => toast.style.display = 'none', 2000);
+        });
+
+        objectionsContainer.appendChild(card);
+      });
+    }
+
+    searchInput.addEventListener('input', renderObjections);
+
+    document.querySelectorAll('.filter-pill').forEach(pill => {
+      pill.addEventListener('click', () => {
+        soundEngine.playClick();
+        document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+        currentCategory = pill.dataset.cat;
+        renderObjections();
+      });
+    });
+
+    renderObjections();
+
+    // 2. Load Project Data
+    const urlParams = new URLSearchParams(window.location.search);
+    const projectId = urlParams.get('id');
+
+    async function loadWarRoom() {
+      let manifest = null;
+      if (projectId) {
+        const record = await projectVault.getProject(projectId);
+        if (record) manifest = record.manifest;
+      }
+      if (!manifest) {
+        const all = await projectVault.listAllProjects();
+        if (all && all.length > 0) manifest = all[0].manifest;
+      }
+
+      if (manifest) {
+        document.getElementById('warRoomTitle').textContent = manifest.name;
+        document.getElementById('warRoomArchetype').textContent = manifest.archetype;
+      }
+    }
+    loadWarRoom();
+
+    // 3. Synchronized Presenter Timer & Clock Bridge (T044)
+    let timerMode = 'countdown'; // 'stopwatch' | 'countdown'
+    let totalAllocatedSec = 900; // 15 mins default
+    let elapsedSec = 0;
+    let isTimerRunning = true;
+    const stageTimerEl = document.getElementById('stageTimer');
+    const timerLabelEl = document.getElementById('timerLabel');
+    const timerModeSelect = document.getElementById('timerModeSelect');
+    const btnTimerToggle = document.getElementById('btnTimerToggle');
+    const btnTimerReset = document.getElementById('btnTimerReset');
+
+    function updateTimerDisplay() {
+      let displayString = '00:00';
+      let isOvertime = false;
+      let isWarning = false;
+
+      if (timerMode === 'stopwatch') {
+        timerLabelEl.textContent = 'ELAPSED:';
+        const mins = String(Math.floor(elapsedSec / 60)).padStart(2, '0');
+        const secs = String(elapsedSec % 60).padStart(2, '0');
+        displayString = `${mins}:${secs}`;
+      } else {
+        timerLabelEl.textContent = 'REMAINING:';
+        const remaining = totalAllocatedSec - elapsedSec;
+        if (remaining >= 0) {
+          const mins = String(Math.floor(remaining / 60)).padStart(2, '0');
+          const secs = String(remaining % 60).padStart(2, '0');
+          displayString = `${mins}:${secs}`;
+          if (remaining <= 120) isWarning = true;
+        } else {
+          isOvertime = true;
+          const over = Math.abs(remaining);
+          const mins = String(Math.floor(over / 60)).padStart(2, '0');
+          const secs = String(over % 60).padStart(2, '0');
+          displayString = `+${mins}:${secs}`;
+        }
+      }
+
+      stageTimerEl.textContent = displayString;
+      stageTimerEl.className = isOvertime ? 'timer-overtime' : (isWarning ? 'timer-warning' : '');
+
+      // Broadcast Clock State to Stage Canvas
+      remoteSync.syncStageTimer({
+        mode: timerMode,
+        elapsedSec,
+        remainingSec: totalAllocatedSec - elapsedSec,
+        totalSec: totalAllocatedSec,
+        isRunning: isTimerRunning,
+        displayString,
+        isOvertime,
+        isWarning
+      });
+    }
+
+    setInterval(() => {
+      if (isTimerRunning) {
+        elapsedSec++;
+        updateTimerDisplay();
+      }
+    }, 1000);
+
+    timerModeSelect.addEventListener('change', (e) => {
+      soundEngine.playClick();
+      const val = e.target.value;
+      if (val === 'stopwatch') {
+        timerMode = 'stopwatch';
+      } else {
+        timerMode = 'countdown';
+        totalAllocatedSec = parseInt(val, 10);
+      }
+      elapsedSec = 0;
+      updateTimerDisplay();
+    });
+
+    btnTimerToggle.addEventListener('click', () => {
+      soundEngine.playClick();
+      isTimerRunning = !isTimerRunning;
+      btnTimerToggle.innerHTML = isTimerRunning 
+        ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>' 
+        : '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>';
+      updateTimerDisplay();
+    });
+
+    btnTimerReset.addEventListener('click', () => {
+      soundEngine.playClick();
+      elapsedSec = 0;
+      updateTimerDisplay();
+    });
+
+    // 4. Roadmap Stage Navigation & High-Precision Presenter Mirror Sync (Task T089)
+    let activeStage = 0;
+    const stageTitles = [
+      'Living Architecture & 3D Holodeck',
+      'Real In-Browser Pyodide Sandbox',
+      'Multi-Device Prototype Frame',
+      'Dynamic Financial ROI Bento',
+      'Audience Remote & Live Reactions',
+      'End of Keynote Deck'
+    ];
+
+    function setActiveStage(idx, shouldBroadcast = true) {
+      activeStage = idx;
+      document.querySelectorAll('.roadmap-stage-card').forEach((card, i) => {
+        if (i === idx) {
+          card.style.borderColor = '#00F0FF';
+          card.style.background = 'rgba(0,240,255,0.08)';
+        } else {
+          card.style.borderColor = '#1E2D44';
+          card.style.background = '#090F1A';
+        }
+      });
+
+      const nextEl = document.getElementById('mirrorNextSlideTitle');
+      if (nextEl) {
+        nextEl.textContent = stageTitles[idx] || 'End of Keynote Deck';
+      }
+
+      if (typeof updateCopilotStage === 'function') {
+        updateCopilotStage(idx);
+      }
+
+      if (shouldBroadcast) {
+        presenterMirror.broadcast('STAGE_NAV_COMMAND', { action: 'jump', stageIndex: idx });
+        supabaseRealtime.broadcast('SLIDE_CHANGE', {
+          slideIndex: idx,
+          title: stageTitles[idx] || `Stage ${idx + 1}`,
+          source: 'war-room'
+        });
+      }
+    }
+
+    // Inbound Presenter Mirror Lockstep Sync
+    presenterMirror.onEvent((event) => {
+      if (event.type === 'STAGE_SYNC' && event.payload) {
+        const { stageIndex, nextTitle } = event.payload;
+        if (typeof stageIndex === 'number' && stageIndex !== activeStage) {
+          setActiveStage(stageIndex, false);
+        }
+        const nextEl = document.getElementById('mirrorNextSlideTitle');
+        if (nextEl && nextTitle) {
+          nextEl.textContent = nextTitle;
+        }
+      }
+    });
+
+    document.querySelectorAll('.roadmap-stage-card').forEach(card => {
+      card.addEventListener('click', () => {
+        soundEngine.playClick();
+        const stage = parseInt(card.dataset.stage, 10);
+        setActiveStage(stage);
+        remoteSync.navigateStage('jump', stage);
+      });
+    });
+
+    document.getElementById('btnWarPrev')?.addEventListener('click', () => {
+      soundEngine.playClick();
+      if (activeStage > 0) {
+        setActiveStage(activeStage - 1);
+        remoteSync.navigateStage('prev');
+      }
+    });
+
+    document.getElementById('btnWarNext')?.addEventListener('click', () => {
+      soundEngine.playClick();
+      if (activeStage < 5) {
+        setActiveStage(activeStage + 1);
+        remoteSync.navigateStage('next');
+      }
+    });
+
+    // [PAGE HIGHLIGHT: war-room.html — Supabase Realtime Telemetry & Multi-Device Sync Relay]
+    const warSupabaseSyncBadge = document.getElementById('warSupabaseSyncBadge');
+    const warSupabaseStatusDot = document.getElementById('warSupabaseStatusDot');
+    const warSupabaseStatusText = document.getElementById('warSupabaseStatusText');
+
+    function updateWarSupabaseUI(status) {
+      if (!warSupabaseSyncBadge || !warSupabaseStatusText) return;
+      if (status.state === 'connected') {
+        warSupabaseSyncBadge.className = 'cyber-badge badge-emerald';
+        warSupabaseSyncBadge.style.color = '#10B981';
+        warSupabaseSyncBadge.style.borderColor = '#10B981';
+        if (warSupabaseStatusDot) warSupabaseStatusDot.style.background = '#10B981';
+        warSupabaseStatusText.textContent = `CLOUD MESH (${status.latencyMs}ms)`;
+      } else if (status.state === 'connecting') {
+        warSupabaseSyncBadge.className = 'cyber-badge badge-amber';
+        warSupabaseSyncBadge.style.color = '#F59E0B';
+        warSupabaseSyncBadge.style.borderColor = '#F59E0B';
+        if (warSupabaseStatusDot) warSupabaseStatusDot.style.background = '#F59E0B';
+        warSupabaseStatusText.textContent = 'CONNECTING...';
+      } else {
+        warSupabaseSyncBadge.className = 'cyber-badge';
+        warSupabaseSyncBadge.style.color = '#38BDF8';
+        warSupabaseSyncBadge.style.borderColor = '#38BDF8';
+        if (warSupabaseStatusDot) warSupabaseStatusDot.style.background = '#38BDF8';
+        warSupabaseStatusText.textContent = 'AIR-GAP LOCAL';
+      }
+    }
+
+    updateWarSupabaseUI(supabaseRealtime.getStatus());
+    supabaseRealtime.subscribe(updateWarSupabaseUI);
+
+    // Inbound remote navigation from Supabase cloud remotes
+    supabaseRealtime.on('SLIDE_NAV', (payload) => {
+      if (payload && payload.direction === 'next') {
+        if (activeStage < 5) {
+          setActiveStage(activeStage + 1, false);
+          remoteSync.navigateStage('next');
+        }
+      } else if (payload && payload.direction === 'prev') {
+        if (activeStage > 0) {
+          setActiveStage(activeStage - 1, false);
+          remoteSync.navigateStage('prev');
+        }
+      }
+    });
+
+    // 5. Teleprompter Font Sizing
+    let currentFontSize = 16;
+    const teleprompter = document.getElementById('teleprompterContainer');
+    document.getElementById('btnTextLarger')?.addEventListener('click', () => {
+      currentFontSize = Math.min(currentFontSize + 2, 26);
+      teleprompter.style.fontSize = `${currentFontSize}px`;
+    });
+    document.getElementById('btnTextSmaller')?.addEventListener('click', () => {
+      currentFontSize = Math.max(currentFontSize - 2, 12);
+      teleprompter.style.fontSize = `${currentFontSize}px`;
+    });
+
+    // 6. Speech Pacing Coach & Real-Time Filler Word Detector (Task T065)
+    let isCoachActive = true;
+    let speechRecognitionInstance = null;
+    const wpmDisplay = document.getElementById('liveWpmCounter');
+    const paceBadge = document.getElementById('coachPaceBadge');
+    const clarityBadge = document.getElementById('speechClarityBadge');
+    const fillerTotalBadge = document.getElementById('fillerTotalBadge');
+    const fillerCadenceStatus = document.getElementById('fillerCadenceStatus');
+    const vocalEnergyLabel = document.getElementById('vocalEnergyLabel');
+    const radarBars = document.querySelectorAll('.speech-radar-bar');
+
+    const fillerCounters = {
+      um: 0,
+      uh: 0,
+      like: 0,
+      actually: 0,
+      basically: 0
+    };
+
+    function updateSpeechUI(wpm) {
+      if (wpmDisplay) {
+        wpmDisplay.innerHTML = `${wpm} <span style="font-size: 11px; color: #64748B;">WPM</span>`;
+      }
+      
+      if (paceBadge) {
+        if (wpm < 122) {
+          paceBadge.textContent = 'PACE: SLOW';
+          paceBadge.className = 'cyber-badge badge-amber';
+        } else if (wpm > 154) {
+          paceBadge.textContent = 'PACE: FAST';
+          paceBadge.className = 'cyber-badge badge-rose';
+        } else {
+          paceBadge.textContent = 'OPTIMAL';
+          paceBadge.className = 'cyber-badge badge-emerald';
+        }
+      }
+
+      // Animate pitch cadence radar bars
+      radarBars.forEach((bar) => {
+        const height = Math.floor(35 + Math.random() * 60);
+        bar.style.height = `${height}%`;
+        if (height > 80) {
+          bar.style.background = '#00F0FF';
+        } else if (height > 50) {
+          bar.style.background = '#10B981';
+        } else {
+          bar.style.background = '#38BDF8';
+        }
+      });
+    }
+
+    // Inbound broadcast from Human Rehearsal Playbook on stage (Task T164)
+    try {
+      const rehearsalChannel = new BroadcastChannel('apexflow_rehearsal_channel');
+      rehearsalChannel.onmessage = (e) => {
+        const data = e.data;
+        if (data && data.type === 'REHEARSAL_TICK') {
+          updateSpeechUI(data.wpm);
+          if (fillerTotalBadge) {
+            fillerTotalBadge.textContent = `${data.fillerCount} detected`;
+          }
+        }
+      };
+    } catch (e) {}
+
+    function processSpeechText(text) {
+      if (!text || typeof text !== 'string') return;
+      
+      const words = text.toLowerCase().match(/\b[a-z']+\b/g) || [];
+      let detectedInBatch = 0;
+
+      words.forEach(w => {
+        if (w === 'um') { fillerCounters.um++; detectedInBatch++; }
+        else if (w === 'uh') { fillerCounters.uh++; detectedInBatch++; }
+        else if (w === 'like') { fillerCounters.like++; detectedInBatch++; }
+        else if (w === 'actually') { fillerCounters.actually++; detectedInBatch++; }
+        else if (w === 'basically') { fillerCounters.basically++; detectedInBatch++; }
+      });
+
+      renderFillerMetrics();
+      if (detectedInBatch > 0) {
+        soundEngine?.playTick?.();
+      }
+    }
+
+    function renderFillerMetrics() {
+      const elUm = document.getElementById('countUm');
+      const elUh = document.getElementById('countUh');
+      const elLike = document.getElementById('countLike');
+      const elAct = document.getElementById('countActually');
+      const elBas = document.getElementById('countBasically');
+
+      if (elUm) elUm.textContent = fillerCounters.um;
+      if (elUh) elUh.textContent = fillerCounters.uh;
+      if (elLike) elLike.textContent = fillerCounters.like;
+      if (elAct) elAct.textContent = fillerCounters.actually;
+      if (elBas) elBas.textContent = fillerCounters.basically;
+
+      const totalFillers = fillerCounters.um + fillerCounters.uh + fillerCounters.like + fillerCounters.actually + fillerCounters.basically;
+      const clarityScore = Math.max(50, 100 - (totalFillers * 5));
+
+      if (fillerTotalBadge) {
+        fillerTotalBadge.textContent = `${totalFillers} Filler Words`;
+        fillerTotalBadge.style.color = totalFillers === 0 ? '#10B981' : (totalFillers <= 3 ? '#F59E0B' : '#F43F5E');
+      }
+
+      if (clarityBadge) {
+        clarityBadge.textContent = `${clarityScore}% CRISP`;
+        if (clarityScore >= 90) {
+          clarityBadge.className = 'cyber-badge badge-emerald';
+        } else if (clarityScore >= 75) {
+          clarityBadge.className = 'cyber-badge badge-amber';
+        } else {
+          clarityBadge.className = 'cyber-badge badge-rose';
+        }
+      }
+
+      if (fillerCadenceStatus) {
+        if (totalFillers === 0) {
+          fillerCadenceStatus.textContent = 'Authoritative & Crisp';
+          fillerCadenceStatus.style.color = '#10B981';
+          if (vocalEnergyLabel) vocalEnergyLabel.textContent = 'Steady Rhythm';
+        } else if (totalFillers <= 3) {
+          fillerCadenceStatus.textContent = 'Mild Hesitation Detected';
+          fillerCadenceStatus.style.color = '#F59E0B';
+          if (vocalEnergyLabel) vocalEnergyLabel.textContent = 'Pacing Variance';
+        } else {
+          fillerCadenceStatus.textContent = 'Elevated Filler Frequency';
+          fillerCadenceStatus.style.color = '#F43F5E';
+          if (vocalEnergyLabel) vocalEnergyLabel.textContent = 'Cadence Fluctuating';
+        }
+      }
+    }
+
+    // Interval for ambient speech cadence simulation when running
+    setInterval(() => {
+      if (!isCoachActive) return;
+      const simulatedWpm = 134 + Math.floor(Math.sin(Date.now() / 3200) * 11);
+      updateSpeechUI(simulatedWpm);
+    }, 2000);
+
+    // Web Speech API Native Recognition Initialization
+    function initSpeechRecognition() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) return;
+
+      try {
+        speechRecognitionInstance = new SpeechRecognition();
+        speechRecognitionInstance.continuous = true;
+        speechRecognitionInstance.interimResults = true;
+        speechRecognitionInstance.lang = 'en-US';
+
+        speechRecognitionInstance.onresult = (event) => {
+          if (!isCoachActive) return;
+          for (let i = event.resultIndex; i < event.results.length; ++i) {
+            if (event.results[i].isFinal) {
+              const transcript = event.results[i][0].transcript;
+              processSpeechText(transcript);
+            }
+          }
+        };
+
+        speechRecognitionInstance.onerror = () => {
+          // Gracefully continue with simulation
+        };
+
+        speechRecognitionInstance.onend = () => {
+          if (isCoachActive) {
+            try { speechRecognitionInstance.start(); } catch (e) {}
+          }
+        };
+
+        speechRecognitionInstance.start();
+      } catch (err) {
+        console.warn('SpeechRecognition initialization note:', err);
+      }
+    }
+
+    initSpeechRecognition();
+
+    document.getElementById('btnToggleSpeechCoach')?.addEventListener('click', (e) => {
+      isCoachActive = !isCoachActive;
+      const targetBtn = e.target.closest('#btnToggleSpeechCoach') || e.target;
+      targetBtn.innerHTML = isCoachActive 
+        ? '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg><span>Mic: Active</span>'
+        : '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="1" y1="1" x2="23" y2="23"/><path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"/><path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg><span>Mic: Paused</span>';
+      if (isCoachActive) {
+        try { speechRecognitionInstance?.start(); } catch (err) {}
+      } else {
+        try { speechRecognitionInstance?.stop(); } catch (err) {}
+      }
+      soundEngine.playClick();
+    });
+
+    // Reset Speech Metrics
+    document.getElementById('btnResetSpeechMetrics')?.addEventListener('click', () => {
+      soundEngine.playClick();
+      fillerCounters.um = 0;
+      fillerCounters.uh = 0;
+      fillerCounters.like = 0;
+      fillerCounters.actually = 0;
+      fillerCounters.basically = 0;
+      renderFillerMetrics();
+    });
+
+    // Simulate Speech Stream Trigger (for manual verification & presenter drills)
+    const testExecutivePhrases = [
+      "Our autonomous pipeline accelerates multi-region Kubernetes deployments by 40%.",
+      "Um, basically we can, like, scale the zero-downtime microservices in under 3 minutes.",
+      "By eliminating context-switching, executive teams reclaim 35 engineering hours weekly.",
+      "Uh, actually the database shard rebalancing occurs, like, completely transparently."
+    ];
+    let testPhraseIndex = 0;
+
+    document.getElementById('btnSimulateSpeech')?.addEventListener('click', () => {
+      soundEngine.playClick();
+      const phrase = testExecutivePhrases[testPhraseIndex % testExecutivePhrases.length];
+      testPhraseIndex++;
+      processSpeechText(phrase);
+      const simulatedWpm = 138 + Math.floor((Math.random() - 0.5) * 16);
+      updateSpeechUI(simulatedWpm);
+    });
+
+    // 7. War Room Right Panel Switching (Objections vs Live Q&A vs AI Copilot vs Poll Studio)
+    const btnSwitchObj = document.getElementById('btnSwitchObjections');
+    const btnSwitchQA = document.getElementById('btnSwitchQA');
+    const btnSwitchCopilot = document.getElementById('btnSwitchCopilot');
+    const btnSwitchPoll = document.getElementById('btnSwitchPollStudio');
+    const panelObj = document.getElementById('panelObjections');
+    const panelQA = document.getElementById('panelAudienceQA');
+    const panelCopilot = document.getElementById('panelCopilot');
+    const panelPoll = document.getElementById('panelPollStudio');
+    const qaBadge = document.getElementById('qaLiveBadge');
+
+    function resetTabs() {
+      panelObj.style.display = 'none';
+      panelQA.style.display = 'none';
+      if (panelCopilot) panelCopilot.style.display = 'none';
+      if (panelPoll) panelPoll.style.display = 'none';
+
+      btnSwitchObj.style.borderColor = '';
+      btnSwitchObj.style.color = '';
+      btnSwitchObj.style.background = '';
+
+      btnSwitchQA.style.borderColor = '';
+      btnSwitchQA.style.color = '';
+      btnSwitchQA.style.background = '';
+
+      if (btnSwitchCopilot) {
+        btnSwitchCopilot.style.borderColor = '';
+        btnSwitchCopilot.style.color = '';
+        btnSwitchCopilot.style.background = '';
+      }
+
+      if (btnSwitchPoll) {
+        btnSwitchPoll.style.borderColor = '';
+        btnSwitchPoll.style.color = '';
+        btnSwitchPoll.style.background = '';
+      }
+    }
+
+    btnSwitchObj?.addEventListener('click', () => {
+      soundEngine.playClick();
+      resetTabs();
+      panelObj.style.display = 'flex';
+      btnSwitchObj.style.borderColor = '#00F0FF';
+      btnSwitchObj.style.color = '#00F0FF';
+      btnSwitchObj.style.background = 'rgba(0,240,255,0.12)';
+    });
+
+    btnSwitchQA?.addEventListener('click', () => {
+      soundEngine.playClick();
+      resetTabs();
+      panelQA.style.display = 'flex';
+      btnSwitchQA.style.borderColor = '#F59E0B';
+      btnSwitchQA.style.color = '#F59E0B';
+      btnSwitchQA.style.background = 'rgba(245,158,11,0.12)';
+    });
+
+    btnSwitchCopilot?.addEventListener('click', () => {
+      soundEngine.playClick();
+      resetTabs();
+      if (panelCopilot) panelCopilot.style.display = 'flex';
+      btnSwitchCopilot.style.borderColor = '#C084FC';
+      btnSwitchCopilot.style.color = '#C084FC';
+      btnSwitchCopilot.style.background = 'rgba(192,132,252,0.12)';
+    });
+
+    btnSwitchPoll?.addEventListener('click', () => {
+      soundEngine.playClick();
+      resetTabs();
+      if (panelPoll) panelPoll.style.display = 'flex';
+      btnSwitchPoll.style.borderColor = '#00F0FF';
+      btnSwitchPoll.style.color = '#00F0FF';
+      btnSwitchPoll.style.background = 'rgba(0,240,255,0.12)';
+      renderWarRoomPoll();
+    });
+
+    // 8. AI Pitch Copilot & Dynamic Q&A Rebuttal Matrix (Task T070)
+    const COPILOT_STAGE_DATA = [
+      {
+        title: "Slide 1: Problem & Vision",
+        whisper: "Frame: 35h weekly loss. Zero-Upload client eliminates enterprise governance friction.",
+        cheat: "• Core Metric: 35 eng hours lost weekly in manual pipeline friction.<br/>• Sequoia Hook: Zero-Upload client runtime eliminates 100% of data governance resistance.<br/>• Strategic Metaphor: 'This is Bloomberg Terminal meets Docker for software keynotes.'"
+      },
+      {
+        title: "Slide 2: Living Architecture",
+        whisper: "Architecture: 1,200 particle orbital DAG. Sub-10ms inter-service latency.",
+        cheat: "• Core Metric: 8ms p99 intra-pipeline edge latency.<br/>• Key Insight: Living 2D/3D DAG renders live telemetry directly into the keynote stage.<br/>• Strategic Metaphor: 'An interactive MRI of our distributed software systems.'"
+      },
+      {
+        title: "Slide 3: WebAssembly Sandbox",
+        whisper: "Wasm Sandbox: Pure client CPython execution. Zero remote socket permissions.",
+        cheat: "• Core Metric: Hardware-native microsecond Python compilation in WebAssembly.<br/>• Key Insight: Zero cloud execution cost; client browser bears all compute.<br/>• Strategic Metaphor: 'A hardware-isolated sandbox inside every customer browser.'"
+      },
+      {
+        title: "Slide 4: Device Frames",
+        whisper: "Responsive: 120 FPS across 32-inch 6K monitors and mobile viewports.",
+        cheat: "• Core Metric: 120 FPS fluid layout with 0 cumulative layout shift.<br/>• Key Insight: Executive viewports demonstrate real product prototypes in context.<br/>• Strategic Metaphor: 'Design integrity verified on real hardware before rollout.'"
+      },
+      {
+        title: "Slide 5: Bento ROI Modeler",
+        whisper: "ROI: $136,000 annual savings with 84% faster incident turnaround.",
+        cheat: "• Core Metric: $136k hard dollar savings + 84% MTTR reduction.<br/>• CFO Hook: Interactive headcount modeling proves quadratic ROI scaling.<br/>• Strategic Metaphor: 'Direct compound interest on developer velocity.'"
+      },
+      {
+        title: "Slide 6: Audience Remote",
+        whisper: "Engagement: Instant QR PWA with real-time WebRTC and voting telemetry.",
+        cheat: "• Core Metric: 98% audience engagement pulse with zero app-store download.<br/>• Key Insight: Converts passive boardroom attendees into active participants.<br/>• Strategic Metaphor: 'The keynote is a collaborative operating system.'"
+      }
+    ];
+
+    function updateCopilotStage(idx) {
+      const data = COPILOT_STAGE_DATA[idx] || COPILOT_STAGE_DATA[0];
+      const titleEl = document.getElementById('copilotStageTitle');
+      const cheatEl = document.getElementById('copilotStageCheat');
+      if (titleEl) titleEl.textContent = data.title;
+      if (cheatEl) cheatEl.innerHTML = data.cheat;
+    }
+
+    const COPILOT_REBUTTALS = {
+      aws: {
+        title: "Defense: vs AWS Native Services (CloudWatch, Step Functions)",
+        content: "<strong>1. Acknowledge:</strong> AWS native tools excel at raw infrastructure plumbing.<br/><strong>2. Differentiate:</strong> But AWS consoles cannot present to non-technical executive boards and expose sensitive IP to third-party cloud policies.<br/><strong>3. Close:</strong> APEXFLOW OS gives C-suite visual intelligence with 100% Zero-Upload client privacy and sub-10ms interactive demo execution.",
+        whisper: "vs AWS: We give C-level visual clarity and zero-upload client privacy where AWS is purely developer plumbing."
+      },
+      onprem: {
+        title: "Defense: Air-Gapped / Banking Security Compliance",
+        content: "<strong>1. Acknowledge:</strong> Regulated banks and defense sectors forbid cloud SaaS telemetry.<br/><strong>2. Differentiate:</strong> APEXFLOW OS requires zero backend servers—the entire engine executes in offline browser RAM.<br/><strong>3. Close:</strong> 1-Click offline standalone bundle runs on disconnected air-gapped laptops with zero network connectivity.",
+        whisper: "Air-Gapped: 100% self-contained offline HTML. Zero network calls or external tokens required."
+      },
+      friction: {
+        title: "Defense: Engineering Migration & Adoption Friction",
+        content: "<strong>1. Acknowledge:</strong> Teams cannot afford months migrating slide templates or learning DSLs.<br/><strong>2. Differentiate:</strong> Simply drop any Git repo, Zip archive, or folder, and AST engines automatically construct the 6-slide keynote in 1.4 seconds.<br/><strong>3. Close:</strong> Zero config or boilerplate needed; engineers remain focused on code.",
+        whisper: "Zero Migration Friction: Drag & drop any repo or zip; AST classifies and builds the deck in 1.4s."
+      },
+      roi: {
+        title: "Defense: CFO Board-Level Return on Investment",
+        content: "<strong>1. Acknowledge:</strong> Tooling budgets face intense scrutiny from enterprise CFOs.<br/><strong>2. Differentiate:</strong> Traditional pitch decks waste 35 engineering hours per presentation cycle without proving real functionality.<br/><strong>3. Close:</strong> With APEXFLOW OS, live executable sandboxes compress sales cycles by 40% and recover $136k annually.",
+        whisper: "Board ROI: Reclaims 35 eng hours/week, cuts sales cycle 40%, yields $136k hard annual savings."
+      }
+    };
+
+    let activeRebuttal = COPILOT_REBUTTALS.aws;
+
+    function setCopilotRebuttal(key) {
+      const reb = COPILOT_REBUTTALS[key];
+      if (!reb) return;
+      activeRebuttal = reb;
+      const titleEl = document.getElementById('copilotRebuttalTitle');
+      const contentEl = document.getElementById('copilotRebuttalContent');
+      if (titleEl) titleEl.textContent = reb.title;
+      if (contentEl) contentEl.innerHTML = reb.content;
+      soundEngine.playClick();
+    }
+
+    document.querySelectorAll('.copilot-pill').forEach(pill => {
+      pill.addEventListener('click', () => {
+        document.querySelectorAll('.copilot-pill').forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+        setCopilotRebuttal(pill.dataset.query);
+      });
+    });
+
+    document.getElementById('copilotQueryInput')?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        const query = (e.target.value || '').toLowerCase().trim();
+        if (query.includes('aws') || query.includes('cloud')) setCopilotRebuttal('aws');
+        else if (query.includes('air') || query.includes('prem') || query.includes('bank')) setCopilotRebuttal('onprem');
+        else if (query.includes('migrat') || query.includes('frict') || query.includes('time')) setCopilotRebuttal('friction');
+        else if (query.includes('roi') || query.includes('cost') || query.includes('cfo')) setCopilotRebuttal('roi');
+        else {
+          activeRebuttal = {
+            title: `Custom Rebuttal: "${e.target.value}"`,
+            content: `<strong>1. Acknowledge:</strong> Validate the investor's perspective on ${e.target.value}.<br/><strong>2. Differentiate:</strong> Emphasize our client-side deterministic runtime and zero-upload security.<br/><strong>3. Close:</strong> Highlight our verified 84% reduction in incident resolution latency.`,
+            whisper: `Rebuttal: Validate concern on ${e.target.value}, highlight client runtime & 84% MTTR reduction.`
+          };
+          const titleEl = document.getElementById('copilotRebuttalTitle');
+          const contentEl = document.getElementById('copilotRebuttalContent');
+          if (titleEl) titleEl.textContent = activeRebuttal.title;
+          if (contentEl) contentEl.innerHTML = activeRebuttal.content;
+          soundEngine.playClick();
+        }
+      }
+    });
+
+    document.getElementById('btnWhisperCopilotSlide')?.addEventListener('click', () => {
+      const data = COPILOT_STAGE_DATA[activeStage] || COPILOT_STAGE_DATA[0];
+      soundEngine.playSuccess();
+      remoteSync.sendPresenterWhisper({
+        title: data.title,
+        text: data.whisper,
+        category: 'STAT_WHISPER',
+        autoDismissSec: 10
+      });
+      const toast = document.getElementById('copilotWhisperToast');
+      if (toast) {
+        toast.style.display = 'inline';
+        setTimeout(() => { toast.style.display = 'none'; }, 2000);
+      }
+    });
+
+    document.getElementById('btnWhisperCopilotRebuttal')?.addEventListener('click', () => {
+      if (!activeRebuttal) return;
+      soundEngine.playSuccess();
+      remoteSync.sendPresenterWhisper({
+        title: activeRebuttal.title,
+        text: activeRebuttal.whisper,
+        category: 'COPILOT_REBUTTAL',
+        autoDismissSec: 14
+      });
+      const toast = document.getElementById('copilotWhisperToast');
+      if (toast) {
+        toast.style.display = 'inline';
+        setTimeout(() => { toast.style.display = 'none'; }, 2000);
+      }
+    });
+
+    document.getElementById('btnCopyCopilotRebuttal')?.addEventListener('click', async () => {
+      if (!activeRebuttal) return;
+      soundEngine.playClick();
+      try {
+        await navigator.clipboard.writeText(`${activeRebuttal.title}\n\n${activeRebuttal.whisper}`);
+        const btn = document.getElementById('btnCopyCopilotRebuttal');
+        if (btn) {
+          btn.innerHTML = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> <span>Copied!</span>';
+          setTimeout(() => {
+            btn.innerHTML = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> <span>Copy</span>';
+          }, 1500);
+        }
+      } catch (e) {}
+    });
+
+    // Live Audience Questions Stream
+    let audienceQuestions = [
+      { id: 'q_demo1', text: 'Can this run in a multi-region active-active VPC setup?', author: 'Lead Architect', upvotes: 4 },
+      { id: 'q_demo2', text: 'How is state managed between the edge workers and Redis?', author: 'DevOps Engineer', upvotes: 2 }
+    ];
+
+    const questionsContainer = document.getElementById('warRoomQuestionsList');
+    const qaToast = document.getElementById('qaSpotlightToast');
+
+    function renderWarRoomQuestions() {
+      if (!questionsContainer) return;
+      questionsContainer.innerHTML = '';
+      if (qaBadge) qaBadge.textContent = audienceQuestions.length;
+
+      audienceQuestions.sort((a, b) => b.upvotes - a.upvotes);
+
+      audienceQuestions.forEach(q => {
+        const card = document.createElement('div');
+        card.className = 'objection-card';
+        card.style.borderColor = 'rgba(245, 158, 11, 0.3)';
+        card.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px;">
+            <span class="cyber-badge badge-amber" style="font-size: 9px; display: inline-flex; align-items: center; gap: 4px;">
+              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+              <span>${q.upvotes} UPVOTES</span>
+            </span>
+            <div style="display: flex; gap: 4px;">
+              <button class="btn-copy-ans btn-copy-q" title="Copy question" style="display: inline-flex; align-items: center; gap: 3px;">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                <span>Copy</span>
+              </button>
+              <button class="btn-whisper btn-spotlight-q" title="Spotlight on Stage HUD" style="border-color: #F59E0B; color: #F59E0B; background: rgba(245, 158, 11, 0.12); display: inline-flex; align-items: center; gap: 3px;">
+                <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+                <span>Spotlight</span>
+              </button>
+            </div>
+          </div>
+          <div style="font-weight: 700; font-size: 12px; color: #F8FAFC; margin-bottom: 4px; line-height: 1.4;">
+            "${escapeHTML(q.text)}"
+          </div>
+          <div style="font-size: 10px; color: #64748B; font-family: var(--font-mono);">
+            Submitted by: <strong style="color: #94A3B8;">${escapeHTML(q.author || 'Audience')}</strong>
+          </div>
+        `;
+
+        card.querySelector('.btn-spotlight-q').addEventListener('click', () => {
+          soundEngine.playSuccess();
+          remoteSync.spotlightAudienceQuestion(q);
+          if (qaToast) {
+            qaToast.style.display = 'inline';
+            setTimeout(() => qaToast.style.display = 'none', 2500);
+          }
+        });
+
+        card.querySelector('.btn-copy-q').addEventListener('click', async () => {
+          soundEngine.playClick();
+          try {
+            await navigator.clipboard.writeText(q.text);
+            const btn = card.querySelector('.btn-copy-q');
+            btn.innerHTML = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> <span>Copied!</span>';
+            setTimeout(() => {
+              btn.innerHTML = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> <span>Copy</span>';
+            }, 1500);
+          } catch (e) {}
+        });
+
+        questionsContainer.appendChild(card);
+      });
+    }
+
+    renderWarRoomQuestions();
+
+    // ================= PHASE 15: REAL-TIME AUDIENCE POLL STUDIO (Task T073) =================
+    const PRESET_POLLS = {
+      prod_ready: {
+        id: 'poll_prod_ready',
+        question: 'Is this architecture ready for Tier-1 Enterprise Production deployment?',
+        options: [
+          { id: 'opt_0', text: 'Deploy to Production Now (Grade A+)', votes: 48 },
+          { id: 'opt_1', text: 'Approve Pending Multi-Region Canary', votes: 26 },
+          { id: 'opt_2', text: 'Run Additional Chaos Injection Drills', votes: 7 }
+        ]
+      },
+      arch_choice: {
+        id: 'poll_arch_choice',
+        question: 'Which architecture pattern best matches our Q4 roadmap?',
+        options: [
+          { id: 'opt_0', text: 'Event-Driven Microservices + Kafka', votes: 34 },
+          { id: 'opt_1', text: 'Serverless Functions + DynamoDB', votes: 19 },
+          { id: 'opt_2', text: 'Modular High-Performance Monolith', votes: 12 }
+        ]
+      },
+      exec_verdict: {
+        id: 'poll_exec_verdict',
+        question: 'Executive Investment Verdict for APEXFLOW OS Adoption:',
+        options: [
+          { id: 'opt_0', text: 'Fully Approved (Immediate Capital Allocation)', votes: 52 },
+          { id: 'opt_1', text: 'Conditionally Approved (Fast-Track Pilot)', votes: 21 },
+          { id: 'opt_2', text: 'More Security Telemetry Needed', votes: 4 }
+        ]
+      }
+    };
+
+    let activeWarPoll = remoteSync.getActivePoll();
+
+    function renderWarRoomPoll(poll = null) {
+      if (poll) activeWarPoll = poll;
+      const qInput = document.getElementById('warPollQuestionInput');
+      const badgeEl = document.getElementById('warPollStatusBadge');
+      const totalEl = document.getElementById('warPollTotalVotes');
+      const listEl = document.getElementById('warPollOptionsList');
+      const winnerNotice = document.getElementById('warPollWinnerNotice');
+
+      if (qInput && activeWarPoll.question) {
+        qInput.value = activeWarPoll.question;
+      }
+
+      if (badgeEl) {
+        badgeEl.textContent = activeWarPoll.status || 'ACTIVE';
+        badgeEl.className = activeWarPoll.status === 'CLOSED'
+          ? 'cyber-badge badge-rose'
+          : 'cyber-badge badge-emerald';
+      }
+
+      const totalVotes = activeWarPoll.totalVotes || 0;
+      if (totalEl) totalEl.textContent = `Total Votes: ${totalVotes}`;
+
+      if (winnerNotice) {
+        if (activeWarPoll.status === 'CLOSED' && (activeWarPoll.winner || activeWarPoll.winnerId)) {
+          winnerNotice.textContent = `Consensus Winner: ${activeWarPoll.winner || 'Selected'}`;
+        } else {
+          winnerNotice.textContent = '';
+        }
+      }
+
+      if (!listEl) return;
+      listEl.innerHTML = (activeWarPoll.options || []).map((opt, idx) => {
+        const votes = opt.votes || 0;
+        const pct = totalVotes > 0 ? Math.round((votes / totalVotes) * 100) : 0;
+        const colors = ['#00F0FF', '#00FF9D', '#8B5CF6', '#F59E0B'];
+        const col = colors[idx % colors.length];
+
+        return `
+          <div style="background: #060A12; border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; padding: 6px 10px; position: relative; overflow: hidden;">
+            <div style="position: absolute; left: 0; top: 0; bottom: 0; width: ${pct}%; background: ${col}22; border-right: 2px solid ${col}; transition: width 0.3s ease;"></div>
+            <div style="display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 2; font-size: 11px;">
+              <span style="color: #F8FAFC; font-weight: 600;">${idx + 1}. ${escapeHTML(opt.text)}</span>
+              <span style="font-family: var(--font-mono); font-weight: 700; color: ${col};">${pct}% (${votes})</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    renderWarRoomPoll();
+
+    document.getElementById('warPollPresetSelect')?.addEventListener('change', (e) => {
+      const selected = PRESET_POLLS[e.target.value];
+      if (selected) {
+        soundEngine.playClick();
+        const updated = remoteSync.createOrUpdatePoll({
+          id: selected.id,
+          question: selected.question,
+          options: selected.options.map(o => ({ ...o })),
+          status: 'ACTIVE'
+        });
+        renderWarRoomPoll(updated);
+      }
+    });
+
+    document.getElementById('btnWarBroadcastPoll')?.addEventListener('click', () => {
+      soundEngine.playSuccess();
+      const qInput = document.getElementById('warPollQuestionInput');
+      if (qInput && qInput.value.trim()) {
+        activeWarPoll.question = qInput.value.trim();
+      }
+      activeWarPoll.status = 'ACTIVE';
+      const updated = remoteSync.createOrUpdatePoll(activeWarPoll);
+      renderWarRoomPoll(updated);
+      const toast = document.getElementById('warPollLiveToast');
+      if (toast) {
+        toast.style.display = 'inline';
+        setTimeout(() => toast.style.display = 'none', 2000);
+      }
+    });
+
+    document.getElementById('btnWarToggleStagePoll')?.addEventListener('click', () => {
+      soundEngine.playClick();
+      remoteSync.toggleStagePollOverlay();
+    });
+
+    document.getElementById('btnWarClosePoll')?.addEventListener('click', () => {
+      soundEngine.playSuccess();
+      const updated = remoteSync.closePoll(activeWarPoll.id);
+      renderWarRoomPoll(updated);
+    });
+
+    document.getElementById('btnWarResetPoll')?.addEventListener('click', () => {
+      soundEngine.playClick();
+      const updated = remoteSync.resetPoll(activeWarPoll.id);
+      renderWarRoomPoll(updated);
+    });
+
+    // Phase 12: Live Audience Pulse & Heatmap Tracking (Task T060)
+    let warAudiencePulse = 98;
+    let bullishReactions = 18;
+    let curiousReactions = 4;
+    let neutralReactions = 1;
+
+    function updateWarAudiencePulse(type) {
+      if (['REACTION', 'AUDIENCE_QUESTION', 'QUESTION_UPVOTE', 'POLL_VOTE'].includes(type)) {
+        if (type === 'AUDIENCE_QUESTION' || type === 'QUESTION_UPVOTE') {
+          curiousReactions++;
+        } else {
+          bullishReactions++;
+        }
+        warAudiencePulse = Math.min(99, warAudiencePulse + 0.4);
+      }
+      const total = bullishReactions + curiousReactions + neutralReactions;
+      const bPct = Math.round((bullishReactions / total) * 100);
+      const cPct = Math.round((curiousReactions / total) * 100);
+      const nPct = Math.max(0, 100 - bPct - cPct);
+
+      const scoreEl = document.getElementById('warRoomPulseScore');
+      if (scoreEl) scoreEl.innerHTML = `${Math.round(warAudiencePulse)}<span style="font-size: 12px; color: #64748B;">%</span>`;
+
+      const bEl = document.getElementById('pulseBullishPct');
+      const cEl = document.getElementById('pulseCuriousPct');
+      const nEl = document.getElementById('pulseNeutralPct');
+      if (bEl) bEl.textContent = `${bPct}%`;
+      if (cEl) cEl.textContent = `${cPct}%`;
+      if (nEl) nEl.textContent = `${nPct}%`;
+
+      const barB = document.getElementById('warPulseBarBullish');
+      const barC = document.getElementById('warPulseBarCurious');
+      const barN = document.getElementById('warPulseBarNeutral');
+      if (barB) barB.style.width = `${bPct}%`;
+      if (barC) barC.style.width = `${cPct}%`;
+      if (barN) barN.style.width = `${nPct}%`;
+
+      const badge = document.getElementById('warRoomPulseBadge');
+      if (badge) {
+        badge.style.transform = 'scale(1.08)';
+        setTimeout(() => badge.style.transform = 'scale(1)', 300);
+      }
+    }
+
+    // Listen for incoming audience events & questions
+    remoteSync.onEvent((event) => {
+      updateWarAudiencePulse(event.type);
+
+      if (event.type === 'POLL_VOTE' || event.type === 'POLL_CREATE_OR_UPDATE' || event.type === 'POLL_STATUS_CHANGE') {
+        if (event.poll) renderWarRoomPoll(event.poll);
+      } else if (event.type === 'AUDIENCE_QUESTION') {
+        if (!audienceQuestions.find(q => q.id === event.id)) {
+          audienceQuestions.push(event);
+          renderWarRoomQuestions();
+        }
+      } else if (event.type === 'QUESTION_UPVOTE') {
+        const found = audienceQuestions.find(q => q.id === event.questionId);
+        if (found) {
+          found.upvotes++;
+          renderWarRoomQuestions();
+        }
+      } else if (event.type === 'PRESENTER_WHISPER') {
+        const toast = document.createElement('div');
+        toast.style.position = 'fixed';
+        toast.style.top = '20px';
+        toast.style.left = '50%';
+        toast.style.transform = 'translateX(-50%)';
+        toast.style.background = 'rgba(244, 63, 94, 0.95)';
+        toast.style.color = '#FFFFFF';
+        toast.style.padding = '10px 18px';
+        toast.style.borderRadius = '8px';
+        toast.style.fontFamily = 'var(--font-mono)';
+        toast.style.fontSize = '12px';
+        toast.style.fontWeight = '700';
+        toast.style.boxShadow = '0 8px 30px rgba(0,0,0,0.8)';
+        toast.style.zIndex = '99999';
+        toast.textContent = `[ATTENTION RADAR] ${event.text || 'Audience attention drop detected.'}`;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 6000);
+      }
+    });
+  </script>
+</body>
+</html>

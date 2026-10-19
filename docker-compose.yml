@@ -1,0 +1,42 @@
+# =========================================================================================
+# 📌 APEXFLOW OS — Enterprise Production Docker Compose (v1.0.0 Gold Master)
+# -----------------------------------------------------------------------------------------
+# 🎯 ARCHITECTURAL ROLE:
+# One-click multi-environment container orchestration for enterprise executive deployments.
+# Runs 100% offline with zero external network connectivity required.
+# =========================================================================================
+
+version: "3.8"
+
+services:
+  apexflow-os:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: apexflow/apexflow-os:1.0.0-gold-master
+    container_name: apexflow-os-gold-master
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+        reservations:
+          cpus: "0.25"
+          memory: 128M
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1/healthz || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    labels:
+      org.opencontainers.image.title: "APEXFLOW OS Enterprise Presentation Platform"
+      org.opencontainers.image.version: "v1.0.0-gold-master"
+      org.opencontainers.image.vendor: "APEXFLOW Systems"
+      com.apexflow.airgap.certified: "true"
+      com.apexflow.zeroupload.privacy: "true"

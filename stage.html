@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<!--
+ =========================================================================================
+ [MODULE]: APEXFLOW OS — Master 120 FPS Executive Keynote Presentation Stage
+ -----------------------------------------------------------------------------------------
+ [ARCHITECTURAL ROLE]:
+ The full-immersion stage environment. Renders the 6 Breakthrough Stages, interactive 2D
+ pipeline with animated photon edges, 3D Holodeck toggle, in-browser Pyodide sandbox,
+ Apple hardware frames, Bento ROI matrix, and Audience mobile QR sync.
+
+ [KEYNOTE CAPABILITIES] (Phase 7 through 11):
+   - Executive Cinematic Director Mode (Hotkey 'C', T052)
+   - Executive Ambient Drone Soundscape (Hotkey 'M', T053)
+   - Floating Frosted Glass Executive Control Dock (Hotkey 'H', T054)
+   - Standalone 1-Click Offline Keynote Player Exporter (T055)
+   - Client-Side Executive Voice Narration & Word-Boundary Karaoke Ticker (Hotkey 'V', T048)
+   - Audience Live Q&A Backchannel & Question Spotlight HUD (Hotkey 'U', T049)
+   - Keynote Session Recorder & Instant Replay Engine (Hotkey 'R', T050)
+   - Audio-Reactive Three.js Holodeck Gravitational Waves (T051)
+   - Keynote Progress Ribbon with Live Synchronized Stage Clock Bridge (T044)
+   - Discreet Presenter Whisper HUD Overlay (Hotkey 'W') synced from War Room (T047)
+   - Dynamic White-Label & Custom Branding Theme Engine with custom watermark (T046)
+   - In-Stage Speaker Notes Prompter HUD (Hotkey 'N') with slide-by-slide talking points
+   - Slide Deck Light Table / Grid Overview (Hotkey 'G') with 6 interactive cards
+   - Autoplay Walkthrough Mode (Hotkey 'A') with timed cycling and audio whooshes
+   - 16:9 Landscape Print / PDF Deck Exporter (Hotkey 'E' / Button 'PDF')
+   - Instant Project Switcher dropdown (#stageProjectSelect)
+
+ [HARDWARE STAGE SHORTCUTS]:
+   [Space] / [→] Next Slide   |  [←] Prev Slide      |  [1]-[6] Jump to Slide
+   [V] Executive Voiceover    |  [R] Record Session   |  [U] Question Spotlight
+   [A] Autoplay Walkthrough   |  [G] Slides Light Table| [N] Speaker Notes HUD
+   [W] Presenter Whisper HUD  |  [L] Laser Pointer   |  [S] Spotlight Mode
+   [D] Neon Pen Draw          |  [C] Clear Drawing   |  [3] 2D/3D Mode
+   [E] Export PDF Deck        |  [Q] QR Remote Modal |  [P] Presenter War Room
+ =========================================================================================
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>APEXFLOW OS — Live 120 FPS Presentation Stage</title>
+  
+  <!-- Autonomous Offline PWA Manifest & Icons (Task T104) -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml" href="icon.svg">
+  <meta name="theme-color" content="#00F0FF">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="src/styles/main.css">
+  <link rel="stylesheet" href="src/styles/shaders.css">
+  <style>
+    @keyframes chaosPulseAmber {
+      0%, 100% { box-shadow: 0 0 15px rgba(245, 158, 11, 0.4), inset 0 0 10px rgba(245, 158, 11, 0.2); border-color: #F59E0B; }
+      50% { box-shadow: 0 0 30px rgba(245, 158, 11, 0.8), inset 0 0 20px rgba(245, 158, 11, 0.4); border-color: #FCD34D; }
+    }
+    @keyframes chaosPulseRose {
+      0%, 100% { box-shadow: 0 0 18px rgba(244, 63, 94, 0.5), inset 0 0 12px rgba(244, 63, 94, 0.3); border-color: #F43F5E; }
+      50% { box-shadow: 0 0 35px rgba(244, 63, 94, 0.9), inset 0 0 24px rgba(244, 63, 94, 0.6); border-color: #FDA4AF; }
+    }
+    .chaos-latency-spike {
+      animation: chaosPulseAmber 1.2s infinite ease-in-out !important;
+      border-color: #F59E0B !important;
+      background: rgba(245, 158, 11, 0.12) !important;
+    }
+    .chaos-node-killed {
+      animation: chaosPulseRose 0.9s infinite ease-in-out !important;
+      border-color: #F43F5E !important;
+      background: rgba(244, 63, 94, 0.15) !important;
+      opacity: 0.82;
+    }
+    .chaos-node-killed div {
+      text-decoration: line-through;
+      text-decoration-color: #F43F5E;
+    }
+  </style>
+</head>
+<body id="stageContainer" style="background: var(--bg-oled); overflow: hidden; height: 100vh; display: flex; flex-direction: column;">
+
+  <!-- Stage Weapons Overlays -->
+  <div id="laserDot" class="laser-point" style="display: none;"></div>
+  <div id="spotlightMask" class="spotlight-mask" style="display: none;"></div>
+
+  <!-- ================= STAGE TOP HUD ================= -->
+  <header style="height: 64px; border-bottom: 1px solid var(--border-subtle); background: rgba(7, 10, 16, 0.95); backdrop-filter: blur(14px); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; z-index: 50;">
+    
+    <!-- Left: Project Selector & Archetype -->
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <a href="index.html" class="btn btn-secondary" style="height: 34px; padding: 0 10px; font-size: 11px;" title="Back to Project Dropzone">
+        ← Ingestion
+      </a>
+      
+      <!-- Project Switcher Select -->
+      <select id="stageProjectSelect" style="background: #0B1322; border: 1px solid #1E2D44; border-radius: 6px; color: #F8FAFC; height: 34px; padding: 0 10px; font-size: 13px; font-weight: 700; max-width: 260px; outline: none; cursor: pointer;">
+        <option value="">Loading Deck...</option>
+      </select>
+
+      <span id="stageArchetypeBadge" class="cyber-badge" style="font-size: 10px; padding: 2px 8px;">
+        Classifying...
+      </span>
+
+      <!-- [PAGE HIGHLIGHT: stage.html — Live Supabase Realtime Mesh & Air-Gap Status Indicator] -->
+      <a href="admin.html" id="stageSupabaseSyncPill" class="cyber-badge badge-emerald" style="text-decoration: none; font-size: 10px; padding: 2px 8px; display: inline-flex; align-items: center; gap: 5px; cursor: pointer;" title="Supabase Realtime Cloud Mesh Status (Click to configure in Admin)">
+        <span id="stageSupabaseDot" style="width: 6px; height: 6px; border-radius: 50%; background: #10B981; display: inline-block;"></span>
+        <span id="stageSupabaseText">Local Air-Gap</span>
+      </a>
+    </div>
+
+    <!-- Center: Stage Nav Tabs (1 to 6) -->
+    <nav aria-label="Presentation Keynote Stage Navigation" style="display: flex; align-items: center; gap: 6px;">
+      <button class="cyber-badge stage-nav-pill badge-cyan" data-stage="0" style="cursor: pointer; height: 32px; font-size: 11px;">1. Problem & Vision</button>
+      <button class="cyber-badge stage-nav-pill" data-stage="1" style="cursor: pointer; height: 32px; font-size: 11px;">2. Architecture</button>
+      <button class="cyber-badge stage-nav-pill" data-stage="2" style="cursor: pointer; height: 32px; font-size: 11px;">3. Sandbox</button>
+      <button class="cyber-badge stage-nav-pill" data-stage="3" style="cursor: pointer; height: 32px; font-size: 11px;">4. Mockups</button>
+      <button class="cyber-badge stage-nav-pill" data-stage="4" style="cursor: pointer; height: 32px; font-size: 11px;">5. Bento ROI</button>
+      <button class="cyber-badge stage-nav-pill" data-stage="5" style="cursor: pointer; height: 32px; font-size: 11px;">6. Remote</button>
+    </nav>
+
+    <!-- Right: Presentation Keynote Weapons & Actions -->
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <button id="btnCommandPalette" class="btn btn-secondary" style="height: 34px; font-size: 11px; padding: 0 10px; border-color: rgba(0, 240, 255, 0.4); font-family: var(--font-mono); display: inline-flex; align-items: center; gap: 6px;" title="Executive Command Palette (Cmd+K / Ctrl+K)">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 3a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3H6a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3V6a3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3h12a3 3 0 0 0 3-3 3 3 0 0 0-3-3z"></path></svg>
+        <span>Palette (Cmd+K)</span>
+      </button>
+      <button id="btnVoiceNarrate" class="btn btn-secondary" style="height: 34px; font-size: 11px; padding: 0 10px; display: inline-flex; align-items: center; gap: 6px;" title="Executive Audio Voiceover (V)">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+        <span>Voice (V)</span>
+      </button>
+      <button id="btnRecordSession" class="btn btn-secondary" style="height: 34px; font-size: 11px; padding: 0 10px; display: inline-flex; align-items: center; gap: 6px;" title="Record Presentation Session (R)">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="3" fill="#EF4444"></circle></svg>
+        <span>Record (R)</span>
+      </button>
+      <button id="btnRecordTeaser" class="btn btn-secondary" style="height: 34px; font-size: 11px; padding: 0 10px; display: inline-flex; align-items: center; gap: 6px;" title="Export 10s Cinematic Keynote Teaser Video (K)">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect><line x1="7" y1="2" x2="7" y2="22"></line><line x1="17" y1="2" x2="17" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line><line x1="2" y1="7" x2="7" y2="7"></line><line x1="2" y1="17" x2="7" y2="17"></line><line x1="17" y1="17" x2="22" y2="17"></line><line x1="17" y1="7" x2="22" y2="7"></line></svg>
+        <span>Teaser (K)</span>
+      </button>
+      <button id="btnAutoplay" class="btn btn-secondary" style="height: 34px; font-size: 11px; padding: 0 10px; display: inline-flex; align-items: center; gap: 6px;" title="Autoplay Presentation Walkthrough (A)">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+        <span>Autoplay (A)</span>
+      </button>
+      <button id="btnSlidesGrid" class="btn btn-secondary" style="height: 34px; font-size: 11px; padding: 0 10px; display: inline-flex; align-items: center; gap: 6px;" title="Slide Grid / Light Table (G)">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+        <span>Slides (G)</span>
+      </button>
+      <button id="btnSpeakerNotes" class="btn btn-secondary" style="height: 34px; font-size: 11px; padding: 0 10px; display: inline-flex; align-items: center; gap: 6px;" title="Toggle Speaker Notes HUD (N)">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+        <span>Notes (N)</span>
+      </button>
+      <button id="btnExportPdf" class="btn btn-secondary" style="height: 34px; font-size: 11px; padding: 0 10px; display: inline-flex; align-items: center; gap: 6px;" title="Export 16:9 Landscape PDF Slides Deck">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="9" y1="15" x2="15" y2="15"></line></svg>
+        <span>PDF</span>
+      </button>
+      
+      <!-- Autonomous Offline Vault Status Indicator (Task T104) -->
+      <div id="offlineVaultContainer" style="display: inline-flex; align-items: center;"></div>
+
+      <button id="btnExportBundle" class="btn btn-secondary" style="height: 34px; font-size: 11px; padding: 0 10px; display: inline-flex; align-items: center; gap: 6px;" title="Export Standalone Offline Keynote Player Bundle (T055)">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+        <span>Bundle</span>
+      </button>
+      <button id="btnToggleQr" class="btn btn-primary" style="height: 34px; padding: 0 12px; font-size: 11px; display: inline-flex; align-items: center; gap: 6px;" title="Audience QR Remote (Q)">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
+        <span>Remote (Q)</span>
+      </button>
+    </div>
+
+  </header>
+
+  <!-- ================= SLIDE PROGRESS RIBBON (Task T032, T044 & T060) ================= -->
+  <div style="background: #080D18; border-bottom: 1px solid var(--border-subtle); padding: 8px 24px; display: flex; align-items: center; justify-content: space-between; font-size: 11px; font-family: var(--font-mono); color: var(--text-muted); z-index: 45;">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <span id="currentSlideNumberBadge" style="color: var(--accent-cyan); font-weight: 700;">SLIDE 1 OF 6</span>
+      <span>•</span>
+      <span id="currentSlideTitleBadge" style="color: #F8FAFC; font-weight: 600;">EXECUTIVE SUMMARY & PROBLEM STATEMENT</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 14px;">
+      <!-- Live Audience Pulse & Sentiment Heatmap HUD (Task T060) -->
+      <div id="stageAudiencePulseBadge" style="display: flex; align-items: center; gap: 5px; padding: 2px 8px; border-radius: 4px; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3); font-size: 11px; font-family: var(--font-mono); color: #10B981;" title="Live Audience Sentiment & Interaction Heatmap">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+        <span id="stageAudiencePulseText" style="font-weight: 700;">PULSE: 98%</span>
+      </div>
+      <!-- Synchronized Stage Clock Bridge (T044) -->
+      <div id="stageClockBridgeContainer" style="display: flex; align-items: center; gap: 6px; padding: 2px 8px; border-radius: 4px; background: rgba(0, 240, 255, 0.06); border: 1px solid rgba(0, 240, 255, 0.25);">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+        <span id="stageClockBridgeText" style="color: var(--accent-cyan); font-weight: 700;">15:00</span>
+      </div>
+      <span id="slideProgressPct">16.6%</span>
+      <div style="width: 140px; height: 5px; background: #131E30; border-radius: 3px; overflow: hidden;">
+        <div id="slideProgressBar" class="slide-progress-bar" style="width: 16.6%;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MAIN STAGE VIEWPORT ================= -->
+  <main style="flex: 1; position: relative; overflow: hidden; padding: 20px 24px;">
+
+    <!-- STAGE 1: CINEMATIC HERO & RADAR -->
+    <section id="stageSection1" style="height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; overflow-y: auto; padding: 10px 0;">
+      <div style="max-width: 1100px; width: 100%;">
+        
+        <div style="text-align: center; margin-bottom: 20px;">
+          <span class="cyber-badge badge-violet" style="margin-bottom: 8px;">KEYNOTE SLIDE 1 • PROBLEM STATEMENT & ARCHITECTURE</span>
+          <h1 id="heroTitle" style="font-size: clamp(32px, 3.8vw, 48px); font-weight: 800; margin-bottom: 6px;" class="text-gradient-cyan">
+            Loading...
+          </h1>
+          <p id="heroTagline" style="font-size: 15px; color: var(--text-secondary); max-width: 680px; margin: 0 auto;">
+            Autonomous Engineering Pipeline
+          </p>
+        </div>
+
+        <!-- 3-Column Deck Layout: Problem Card | Holographic Radar | Autonomous Solution Card -->
+        <div style="display: grid; grid-template-columns: 280px 1fr 280px; gap: 20px; align-items: center; margin-bottom: 24px;">
+          
+          <!-- Left: The Problem -->
+          <div class="cyber-card" style="padding: 20px; background: #080D18; border-color: rgba(239, 68, 68, 0.3);">
+            <div style="display: flex; align-items: center; gap: 8px; color: #EF4444; font-size: 11px; font-weight: 700; font-family: var(--font-mono); margin-bottom: 8px; letter-spacing: 0.05em;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <span>CRITICAL INEFFICIENCY</span>
+            </div>
+            <h4 style="font-size: 14px; font-weight: 700; color: #F8FAFC; margin-bottom: 8px;">Manual Operational Friction</h4>
+            <ul style="font-size: 12px; color: #94A3B8; line-height: 1.6; padding-left: 16px; margin: 0;">
+              <li>35+ hours/week lost to manual triage & spreadsheets</li>
+              <li>45-minute average turnaround for client incident alerts</li>
+              <li>High risk of silent drops and human typo regressions</li>
+            </ul>
+          </div>
+
+          <!-- Center: Holographic Radar -->
+          <div style="display: flex; flex-direction: column; align-items: center;">
+            <div id="holographicRadarContainer" style="width: 320px; height: 320px; margin: 0 auto 12px auto;"></div>
+            <div id="heroTechPills" style="display: flex; justify-content: center; flex-wrap: wrap; gap: 6px;"></div>
+          </div>
+
+          <!-- Right: The Solution -->
+          <div class="cyber-card" style="padding: 20px; background: #080D18; border-color: rgba(56, 189, 248, 0.3);">
+            <div style="display: flex; align-items: center; gap: 8px; color: #38BDF8; font-size: 11px; font-weight: 700; font-family: var(--font-mono); margin-bottom: 8px; letter-spacing: 0.05em;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m4.5 12.75 6 6 9-13.5"/></svg>
+              <span>AUTONOMOUS ARCHITECTURE</span>
+            </div>
+            <h4 style="font-size: 14px; font-weight: 700; color: #F8FAFC; margin-bottom: 8px;">Zero-Upload Autonomous Pipeline</h4>
+            <ul style="font-size: 12px; color: #E2E8F0; line-height: 1.6; padding-left: 16px; margin: 0;">
+              <li>100% in-browser WebAssembly memory (zero data leaves machine)</li>
+              <li>Sub-second AST parsing & polymorphic architecture synthesis</li>
+              <li>Deterministic LangChain tool calls & cryptographic audit logs</li>
+            </ul>
+          </div>
+
+        </div>
+
+        <!-- Metric Cards -->
+        <div class="grid-3" style="max-width: 800px; margin: 0 auto;">
+          <div class="cyber-card" style="padding: 14px 20px;">
+            <div id="heroStatFiles" style="font-size: 24px; font-weight: 800; font-family: var(--font-mono); color: var(--accent-cyan);">--</div>
+            <div style="font-size: 11px; color: var(--text-muted);">Repository Files (Zero Upload)</div>
+          </div>
+          <div class="cyber-card" style="padding: 14px 20px;">
+            <div id="heroStatLoc" style="font-size: 24px; font-weight: 800; font-family: var(--font-mono); color: var(--accent-emerald);">--</div>
+            <div style="font-size: 11px; color: var(--text-muted);">Total Lines of Code</div>
+          </div>
+          <div class="cyber-card" style="padding: 14px 20px;">
+            <div id="heroStatScore" style="font-size: 24px; font-weight: 800; font-family: var(--font-mono); color: var(--accent-violet);">--</div>
+            <div style="font-size: 11px; color: var(--text-muted);">Classifier Confidence</div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- STAGE 2: LIVING ARCHITECTURE (2D & 3D HOLODECK) -->
+    <section id="stageSection2" style="display: none; height: 100%; position: relative;">
+      
+      <!-- Top Stage 2 Bar -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span class="cyber-badge badge-cyan">STAGE 2 • LIVING ARCHITECTURE</span>
+          <span style="font-size: 13px; color: var(--text-muted);">Click any node to inspect source code</span>
+          <button id="btnAddStageNode" class="btn btn-secondary" style="height: 32px; font-size: 11px; padding: 0 10px; border-color: rgba(0, 240, 255, 0.4); display: inline-flex; align-items: center; gap: 6px;" title="Add Live Microservice Node to Architecture (Task T058)">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            <span>Add Node</span>
+          </button>
+          <button id="btnTracePacketFlow" class="btn btn-secondary" style="height: 32px; font-size: 11px; padding: 0 10px; border-color: rgba(168, 85, 247, 0.5); color: #C084FC; display: inline-flex; align-items: center; gap: 6px;" title="Simulate Animated Data Packet Flow Trace (Hotkey Z)">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+            <span>Trace (Z)</span>
+          </button>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <button id="btnCycleHolodeckTheme" class="btn btn-secondary" style="height: 36px; font-size: 11px; font-family: var(--font-mono); display: inline-flex; align-items: center; gap: 6px;" title="Cycle Spatial 3D Shader Theme (Shift+T)">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.563-2.512 5.563-5.563C22 6.5 17.5 2 12 2z"></path></svg>
+            <span>Theme: Neon</span>
+          </button>
+          <button id="btn3DToggle" class="btn btn-violet" style="height: 36px; font-size: 12px;">
+            3D Holodeck Galaxy (Press 3)
+          </button>
+        </div>
+      </div>
+
+      <!-- Interactive Subsystem Tier Filter Bar (Task T082, UI/UX Pro Max) -->
+      <div id="subsystemTierFilterBar" style="display: flex; justify-content: space-between; align-items: center; background: rgba(8, 13, 24, 0.85); backdrop-filter: blur(14px); border: 1px solid #1E2D44; border-radius: 10px; padding: 6px 14px; margin-bottom: 10px; gap: 12px; flex-wrap: wrap;">
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <span style="font-size: 11px; font-family: 'JetBrains Mono', monospace; font-weight: 700; color: #64748B; letter-spacing: 0.05em; margin-right: 4px;">TIER FILTER:</span>
+          <button class="tier-filter-btn active" data-tier="all" style="height: 26px; padding: 0 10px; font-size: 11px; border-radius: 14px; border: 1px solid #00F0FF; background: rgba(0, 240, 255, 0.15); color: #00F0FF; cursor: pointer; transition: all 0.2s ease;">
+            All Tiers
+          </button>
+          <button class="tier-filter-btn" data-tier="ingress" style="height: 26px; padding: 0 10px; font-size: 11px; border-radius: 14px; border: 1px solid #1E2D44; background: #0B1322; color: #94A3B8; cursor: pointer; transition: all 0.2s ease;">
+            Ingress & API
+          </button>
+          <button class="tier-filter-btn" data-tier="compute" style="height: 26px; padding: 0 10px; font-size: 11px; border-radius: 14px; border: 1px solid #1E2D44; background: #0B1322; color: #94A3B8; cursor: pointer; transition: all 0.2s ease;">
+            Compute & AI Core
+          </button>
+          <button class="tier-filter-btn" data-tier="data" style="height: 26px; padding: 0 10px; font-size: 11px; border-radius: 14px; border: 1px solid #1E2D44; background: #0B1322; color: #94A3B8; cursor: pointer; transition: all 0.2s ease;">
+            Data & Storage
+          </button>
+          <button class="tier-filter-btn" data-tier="edge" style="height: 26px; padding: 0 10px; font-size: 11px; border-radius: 14px; border: 1px solid #1E2D44; background: #0B1322; color: #94A3B8; cursor: pointer; transition: all 0.2s ease;">
+            Edge & Hardware
+          </button>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 10px; font-family: 'JetBrains Mono', monospace; font-size: 11px;">
+          <span id="tierHealthSummary" style="color: #10B981;">● 100% HEALTHY</span>
+          <span style="color: #334155;">•</span>
+          <span id="tierLatencySummary" style="color: #00F0FF;">AVG: 12ms p99</span>
+          <span style="color: #334155;">•</span>
+          <span id="tierActiveNodesDisplay" style="color: #A855F7;">All Active</span>
+        </div>
+      </div>
+
+      <!-- 2D Canvas View -->
+      <div id="stage2DView" style="position: relative; width: 100%; height: calc(100% - 105px); background: #0A0F1A; border: 1px solid var(--border-card); border-radius: var(--radius-md); overflow: hidden;">
+        <svg id="pipelineSvgCanvas" style="position: absolute; width: 100%; height: 100%; pointer-events: none; z-index: 5;"></svg>
+        <div id="pipelineNodesContainer" style="position: absolute; width: 100%; height: 100%; z-index: 10;"></div>
+      </div>
+
+      <!-- 3D Holodeck View -->
+      <div id="stage3DView" style="display: none; width: 100%; height: calc(100% - 105px); background: radial-gradient(circle at center, #0B1220 0%, #030508 100%); border: 1px solid var(--accent-violet); border-radius: var(--radius-md); position: relative; overflow: hidden;">
+        <canvas id="holodeckCanvas" style="width: 100%; height: 100%; display: block; cursor: grab;"></canvas>
+        <div style="position: absolute; top: 16px; left: 16px; pointer-events: none; background: rgba(7,10,16,0.8); backdrop-filter: blur(8px); border: 1px solid var(--border-card); padding: 8px 14px; border-radius: 6px; font-size: 11px; font-family: var(--font-mono); color: var(--text-muted);">
+          <span>ORBIT: DRAG MOUSE</span> • <span>ZOOM: SCROLL</span> • <span>NODE: CLICK TO INSPECT</span>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- STAGE 3: REAL IN-BROWSER EXECUTION SANDBOX -->
+    <section id="stageSection3" style="display: none; height: 100%; max-width: 1100px; margin: 0 auto;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <div>
+          <span class="cyber-badge badge-emerald">STAGE 3 • REAL IN-BROWSER EXECUTION</span>
+          <span style="font-size: 13px; color: var(--text-muted); margin-left: 12px;">Powered by Pyodide (WebAssembly)</span>
+        </div>
+        <div style="display: flex; gap: 12px; align-items: center;">
+          <span id="sandboxStatusPill" class="cyber-badge">IDLE</span>
+          <button id="btnSimulateTrigger" class="btn btn-primary" style="height: 38px; font-size: 13px; display: inline-flex; align-items: center; gap: 8px;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+            <span>Simulate Trigger Event</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Cyber Terminal Mount Point -->
+      <div id="cyberTerminalMount" style="height: calc(100% - 80px);"></div>
+    </section>
+
+    <!-- STAGE 4: LIVE RESPONSIVE DEVICE FRAMES -->
+    <section id="stageSection4" style="display: none; height: 100%; display: flex; flex-direction: column; align-items: center;">
+      <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 1000px; margin-bottom: 16px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span class="cyber-badge badge-cyan">STAGE 4 • RESPONSIVE DEVICE FRAMES</span>
+          <div style="display: flex; gap: 4px; margin-left: 6px;">
+            <button class="proto-btn active btn btn-secondary" data-proto="analytics" style="height: 30px; font-size: 11px; padding: 0 8px; border-color: #00F0FF; color: #00F0FF; background: rgba(0,240,255,0.12); display: inline-flex; align-items: center; gap: 6px;" title="Analytics Dashboard Prototype">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+              <span>Dashboard</span>
+            </button>
+            <button class="proto-btn btn btn-secondary" data-proto="stream" style="height: 30px; font-size: 11px; padding: 0 8px; display: inline-flex; align-items: center; gap: 6px;" title="Real-Time Event Stream Prototype">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+              <span>Event Stream</span>
+            </button>
+            <button class="proto-btn btn btn-secondary" data-proto="copilot" style="height: 30px; font-size: 11px; padding: 0 8px; display: inline-flex; align-items: center; gap: 6px;" title="AI Copilot Terminal Prototype">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"></rect><circle cx="12" cy="5" r="2"></circle><path d="M12 7v4"></path><line x1="8" y1="16" x2="8.01" y2="16"></line><line x1="16" y1="16" x2="16.01" y2="16"></line></svg>
+              <span>AI Copilot</span>
+            </button>
+          </div>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button id="btnVpDesktop" class="btn btn-primary viewport-btn" data-viewport="desktop" style="height: 34px; font-size: 12px; display: inline-flex; align-items: center; gap: 6px;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+            <span>Desktop (Apple XDR)</span>
+          </button>
+          <button id="btnVpTablet" class="btn btn-secondary viewport-btn" data-viewport="tablet" style="height: 34px; font-size: 12px; display: inline-flex; align-items: center; gap: 6px;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
+            <span>iPad Pro 13"</span>
+          </button>
+          <button id="btnVpMobile" class="btn btn-secondary viewport-btn" data-viewport="mobile" style="height: 34px; font-size: 12px; display: inline-flex; align-items: center; gap: 6px;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
+            <span>iPhone 16 Pro</span>
+          </button>
+        </div>
+      </div>
+
+      <div id="mockupFrame" style="width: 100%; max-width: 1000px; height: calc(100% - 80px); display: flex; align-items: center; justify-content: center;"></div>
+    </section>
+
+    <!-- STAGE 5: BENTO-GRID IMPACT & ROI MATRIX -->
+    <section id="stageSection5" style="display: none; height: 100%; max-width: 1100px; margin: 0 auto; overflow-y: auto;">
+      <div id="bentoRoiMount"></div>
+    </section>
+
+    <!-- STAGE 6: AUDIENCE MOBILE QR REMOTE -->
+    <section id="stageSection6" style="display: none; height: 100%; max-width: 960px; margin: 0 auto; text-align: center; overflow-y: auto;">
+      <div style="margin-bottom: 24px;">
+        <span class="cyber-badge badge-cyan" style="margin-bottom: 12px;">STAGE 6 • AUDIENCE MOBILE QR REMOTE & WEBRTC</span>
+        <h2 style="font-size: 32px; font-weight: 800; color: #F8FAFC; margin-bottom: 8px;">Audience Live Engagement & Webhooks</h2>
+        <p style="font-size: 14px; color: var(--text-muted); max-width: 620px; margin: 0 auto;">
+          Audience members scan the QR code to connect their smartphone as an interactive stage remote controller.
+        </p>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; text-align: left; margin-bottom: 28px;">
+        
+        <!-- Left: QR Connection Card -->
+        <div class="cyber-card" style="padding: 24px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #080D18;">
+          <div style="width: 170px; height: 170px; margin: 0 auto 16px auto; background: #FFFFFF; border-radius: 12px; padding: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 30px rgba(0,240,255,0.2);">
+            <div style="width: 100%; height: 100%; border: 4px solid #000000; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 13px; color: #000000; font-weight: 800; line-height: 1.4;">
+              <span>SCAN</span>
+              <span>REMOTE</span>
+              <span style="font-size: 10px; color: #475569;">PWA 200 OK</span>
+            </div>
+          </div>
+          <div style="font-size: 14px; color: #F8FAFC; font-weight: 700; margin-bottom: 4px;">Connect with Smartphone Camera</div>
+          <div style="font-size: 12px; color: #64748B; margin-bottom: 16px;">Zero App Store Install • Sub-Millisecond Sync</div>
+          
+          <a href="remote.html" target="_blank" class="btn btn-primary" style="height: 36px; font-size: 12px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+            <span>Open Mobile Remote in New Tab</span>
+          </a>
+        </div>
+
+        <!-- Right: Live Audience Polling HUD -->
+        <div class="cyber-card" style="padding: 24px; background: #080D18;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <div style="font-size: 11px; font-family: var(--font-mono); color: #38BDF8; font-weight: 700;">STAGE POLL TELEMETRY</div>
+            <span class="cyber-badge badge-emerald" style="font-size: 10px;">● LIVE</span>
+          </div>
+          <h4 style="font-size: 15px; font-weight: 700; color: #F8FAFC; margin-bottom: 16px;">
+            Which engineering factor is most valuable to your team?
+          </h4>
+
+          <div style="margin-bottom: 14px;">
+            <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px;">
+              <span style="color: #E2E8F0;">Zero-Upload Client AST Privacy</span>
+              <span id="stagePollPct0" style="font-family: var(--font-mono); color: #38BDF8; font-weight: 700;">25%</span>
+            </div>
+            <div style="height: 8px; background: #131E30; border-radius: 4px; overflow: hidden;">
+              <div id="stagePollBar0" style="height: 100%; width: 25%; background: linear-gradient(90deg, #00F0FF, #38BDF8); transition: width 0.4s ease;"></div>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 14px;">
+            <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px;">
+              <span style="color: #E2E8F0;">Sub-Second WASM Pipeline Latency</span>
+              <span id="stagePollPct1" style="font-family: var(--font-mono); color: #38BDF8; font-weight: 700;">55%</span>
+            </div>
+            <div style="height: 8px; background: #131E30; border-radius: 4px; overflow: hidden;">
+              <div id="stagePollBar1" style="height: 100%; width: 55%; background: linear-gradient(90deg, #10B981, #00F0FF); transition: width 0.4s ease;"></div>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 14px;">
+            <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px;">
+              <span style="color: #E2E8F0;">3D Holodeck Executive Presentation</span>
+              <span id="stagePollPct2" style="font-family: var(--font-mono); color: #38BDF8; font-weight: 700;">20%</span>
+            </div>
+            <div style="height: 8px; background: #131E30; border-radius: 4px; overflow: hidden;">
+              <div id="stagePollBar2" style="height: 100%; width: 20%; background: linear-gradient(90deg, #A855F7, #EC4899); transition: width 0.4s ease;"></div>
+            </div>
+          </div>
+
+          <div style="font-size: 11px; color: #64748B; font-family: var(--font-mono); margin-top: 14px;">
+            Votes sync across devices in real time via BroadcastChannel
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Live Stage Reaction Test Triggers -->
+      <div style="display: flex; justify-content: center; gap: 14px; flex-wrap: wrap;">
+        <button class="btn btn-secondary reaction-trigger-btn" data-reaction="priority" style="display: inline-flex; align-items: center; gap: 6px; font-size: 11px;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#F97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path></svg>
+          <span>Priority Alert</span>
+        </button>
+        <button class="btn btn-secondary reaction-trigger-btn" data-reaction="impact" style="display: inline-flex; align-items: center; gap: 6px; font-size: 11px;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path><path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path></svg>
+          <span>Velocity Launch</span>
+        </button>
+        <button class="btn btn-secondary reaction-trigger-btn" data-reaction="endorse" style="display: inline-flex; align-items: center; gap: 6px; font-size: 11px;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>
+          <span>Executive Endorsement</span>
+        </button>
+        <button class="btn btn-secondary reaction-trigger-btn" data-reaction="insight" style="display: inline-flex; align-items: center; gap: 6px; font-size: 11px;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="9" y1="18" x2="15" y2="18"></line><line x1="10" y1="22" x2="14" y2="22"></line><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5.76.76 1.23 1.52 1.41 2.5"></path></svg>
+          <span>Strategic Insight</span>
+        </button>
+        <button class="btn btn-secondary reaction-trigger-btn" data-reaction="surge" style="display: inline-flex; align-items: center; gap: 6px; font-size: 11px;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#A855F7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+          <span>Energy Surge</span>
+        </button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ================= STAGE BOTTOM CONTROLS & HUD ================= -->
+  <footer style="height: 56px; border-top: 1px solid var(--border-subtle); background: rgba(7, 10, 16, 0.95); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; z-index: 50;">
+    <div style="display: flex; gap: 8px;">
+      <button id="btnPrevStage" class="btn btn-secondary" style="height: 34px; padding: 0 12px; font-size: 12px;">← Previous</button>
+      <button id="btnNextStage" class="btn btn-primary" style="height: 34px; padding: 0 16px; font-size: 12px;">Next Stage (Space) →</button>
+    </div>
+
+    <div style="font-size: 11px; font-family: var(--font-mono); color: var(--text-dim); display: flex; gap: 14px;">
+      <span>[Space] Next</span>
+      <span>[A] Autoplay</span>
+      <span>[G] Grid</span>
+      <span>[N] Notes</span>
+      <span>[L] Laser</span>
+      <span>[S] Spotlight</span>
+      <span>[3] 2D/3D</span>
+      <span>[D] Pen</span>
+      <span>[E] PDF</span>
+      <span>[Q] QR</span>
+      <span>[P] War Room</span>
+      <span>[F] Fullscreen</span>
+    </div>
+  </footer>
+
+  <!-- ================= EXECUTIVE NODE INSPECTOR DRAWER (Task T067) ================= -->
+  <div id="codeDrawer" style="position: fixed; top: 0; right: 0; bottom: 0; width: 560px; background: rgba(7, 10, 18, 0.96); backdrop-filter: blur(24px); border-left: 1px solid rgba(0, 240, 255, 0.3); transform: translateX(100%); transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1); z-index: 9999; display: flex; flex-direction: column; padding: 22px 24px; box-shadow: -12px 0 50px rgba(0,0,0,0.85); overflow-y: auto;">
+    
+    <!-- Header -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 12px;">
+      <div>
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+          <span id="drawerNodeBadge" class="cyber-badge" style="font-size: 9px; padding: 2px 7px; color: #00F0FF; border-color: #00F0FF;">MICROSERVICE</span>
+          <span style="font-size: 10px; color: #10B981; font-family: var(--font-mono);">● 99.99% HEALTHY</span>
+        </div>
+        <h3 id="drawerNodeTitle" style="font-size: 18px; font-weight: 700; color: #F8FAFC; margin: 0 0 4px 0;">Node Details</h3>
+        <div id="drawerNodeFile" style="font-size: 11px; font-family: var(--font-mono); color: #38BDF8;">file.py</div>
+      </div>
+      <button id="closeCodeDrawer" class="btn btn-secondary" style="height: 28px; width: 28px; padding: 0; display: inline-flex; align-items: center; justify-content: center;" title="Close Inspector (Esc)">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
+
+    <p id="drawerNodeDesc" style="font-size: 12px; color: #94A3B8; margin-bottom: 14px; line-height: 1.5;"></p>
+
+    <!-- Telemetry Ribbon (SLI/SLA) -->
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 10px;">
+      <div>
+        <div style="font-size: 9px; font-family: var(--font-mono); color: #64748B; text-transform: uppercase;">p99 Latency</div>
+        <div id="drawerLatencyGauge" style="font-size: 14px; font-weight: 800; font-family: var(--font-mono); color: #10B981;">8ms</div>
+      </div>
+      <div>
+        <div style="font-size: 9px; font-family: var(--font-mono); color: #64748B; text-transform: uppercase;">Availability</div>
+        <div id="drawerUptimeGauge" style="font-size: 14px; font-weight: 800; font-family: var(--font-mono); color: #00F0FF;">99.995%</div>
+      </div>
+      <div>
+        <div style="font-size: 9px; font-family: var(--font-mono); color: #64748B; text-transform: uppercase;">Pod Replicas</div>
+        <div id="drawerReplicasGauge" style="font-size: 14px; font-weight: 800; font-family: var(--font-mono); color: #A855F7;">3 / 3 Active</div>
+      </div>
+    </div>
+
+    <!-- Dependency Topology (Ingress / Egress) -->
+    <div style="margin-bottom: 14px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 10px;">
+      <div style="font-size: 10px; font-family: var(--font-mono); color: #94A3B8; margin-bottom: 6px; text-transform: uppercase;">Topology Dependencies:</div>
+      <div style="display: flex; flex-direction: column; gap: 6px; font-size: 11px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="color: #64748B; width: 68px;">Ingress:</span>
+          <div id="drawerUpstreamNodes" style="display: flex; gap: 4px; flex-wrap: wrap;"></div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="color: #64748B; width: 68px;">Egress:</span>
+          <div id="drawerDownstreamNodes" style="display: flex; gap: 4px; flex-wrap: wrap;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chaos Resilience Injection Demonstration (Task T068) -->
+    <div style="margin-bottom: 14px; background: rgba(245, 158, 11, 0.05); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 8px; padding: 10px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <div style="font-size: 10px; font-family: var(--font-mono); color: #F59E0B; text-transform: uppercase; font-weight: 700; display: flex; align-items: center; gap: 5px;">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+          <span>Live Resilience & Chaos Injection:</span>
+        </div>
+        <span style="font-size: 9px; color: #10B981; font-family: var(--font-mono);">Circuit Breaker: CLOSED</span>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <button id="btnInspectorChaosLag" class="btn btn-secondary" style="flex: 1; height: 26px; font-size: 10px; color: #F59E0B; border-color: rgba(245,158,11,0.4); display: inline-flex; align-items: center; justify-content: center; gap: 6px;" title="Inject 450ms network delay to test backpressure">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+          <span>Inject Latency (+450ms)</span>
+        </button>
+        <button id="btnInspectorChaosKill" class="btn btn-secondary" style="flex: 1; height: 26px; font-size: 10px; color: #F43F5E; border-color: rgba(244,63,94,0.4); display: inline-flex; align-items: center; justify-content: center; gap: 6px;" title="Kill pod replica to prove zero-downtime failover">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+          <span>Simulate Crash</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Presenter Talking Points -->
+    <div style="margin-bottom: 14px;">
+      <div style="font-size: 11px; font-weight: 700; color: #A855F7; margin-bottom: 6px; text-transform: uppercase; font-family: var(--font-mono);">
+        Presenter Talking Points:
+      </div>
+      <ul id="drawerTalkingPoints" style="font-size: 11px; color: #CBD5E1; margin: 0; padding-left: 18px; line-height: 1.5;"></ul>
+    </div>
+
+    <!-- Underlying Code & Test Invocation -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+      <div style="font-size: 11px; font-weight: 700; color: #F8FAFC; text-transform: uppercase; font-family: var(--font-mono);">
+        Underlying Implementation:
+      </div>
+      <div style="display: flex; gap: 6px;">
+        <button id="btnInspectorInvoke" class="btn btn-secondary" style="height: 26px; padding: 0 8px; font-size: 10px; color: #10B981; border-color: rgba(16,185,129,0.4); display: inline-flex; align-items: center; gap: 5px;">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+          <span>Test Invoke Node</span>
+        </button>
+        <button id="btnCopySnippet" class="btn btn-secondary" style="height: 26px; padding: 0 8px; font-size: 10px; display: inline-flex; align-items: center; gap: 5px;">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+          <span>Copy Snippet</span>
+        </button>
+      </div>
+    </div>
+
+    <pre id="inspectorInvokeResponse" style="display: none; background: #05080E; border: 1px solid #10B981; border-radius: 6px; padding: 8px 12px; font-size: 10px; font-family: var(--font-mono); color: #6EE7B7; margin-bottom: 8px; white-space: pre-wrap;"></pre>
+    <div id="drawerCodeContainer" style="flex: 1; min-height: 180px; overflow-y: auto;"></div>
+  </div>
+
+  <!-- ================= QR REMOTE MODAL ================= -->
+  <div id="qrModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(3, 5, 8, 0.85); backdrop-filter: blur(12px); z-index: 9998; align-items: center; justify-content: center; padding: 24px;">
+    <div class="cyber-card" style="max-width: 440px; width: 100%; text-align: center; padding: 36px; border-color: var(--accent-cyan);">
+      <h3 style="font-size: 22px; margin-bottom: 8px;">Audience Mobile Remote</h3>
+      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 24px;">Scan with your phone to send live emoji bursts or trigger sandbox events.</p>
+      
+      <div style="width: 180px; height: 180px; margin: 0 auto 20px auto; background: #FFFFFF; border-radius: 8px; padding: 12px; display: flex; align-items: center; justify-content: center;">
+        <div style="width: 100%; height: 100%; border: 4px solid #000; font-family: var(--font-mono); font-size: 13px; font-weight: 800; color: #000; display: flex; align-items: center; justify-content: center;">
+          CONNECT<br/>STAGE
+        </div>
+      </div>
+
+      <button onclick="document.getElementById('qrModal').style.display='none'" class="btn btn-secondary" style="width: 100%;">
+        Close (Esc)
+      </button>
+    </div>
+  </div>
+
+  <!-- ================= IN-STAGE SPEAKER NOTES PROMPTER HUD (Task T033) ================= -->
+  <div id="speakerNotesHUD" class="speaker-notes-hud">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(0,240,255,0.25); padding-bottom: 8px;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--accent-cyan);"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+        <span style="font-size: 12px; font-weight: 700; color: var(--accent-cyan); text-transform: uppercase; letter-spacing: 0.06em; font-family: var(--font-mono);">
+          Presenter Executive Teleprompter & Talking Points
+        </span>
+        <span class="cyber-badge" style="font-size: 9px; padding: 1px 7px; border-color: #A855F7; color: #A855F7;">
+          Hotkey: [N]
+        </span>
+      </div>
+      <button id="btnCloseSpeakerNotes" class="btn btn-secondary" style="height: 26px; width: 26px; padding: 0; display: inline-flex; align-items: center; justify-content: center;" title="Close Notes (N)">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
+    <div id="speakerNotesContent" style="font-size: 13px; color: #E2E8F0; line-height: 1.6; max-height: 170px; overflow-y: auto;">
+      <!-- Populated dynamically by stage-controller.js -->
+    </div>
+  </div>
+
+  <!-- ================= SLIDE DECK LIGHT TABLE / GRID MODAL (Task T034) ================= -->
+  <div id="slidesGridModal" style="display: none; position: fixed; inset: 0; background: rgba(3, 5, 8, 0.90); backdrop-filter: blur(16px); z-index: 9996; align-items: center; justify-content: center; padding: 30px;">
+    <div style="max-width: 1100px; width: 100%; display: flex; flex-direction: column; gap: 20px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-subtle); padding-bottom: 14px;">
+        <div>
+          <h2 style="font-size: 20px; font-weight: 700; color: #F8FAFC; margin: 0 0 4px 0; display: flex; align-items: center; gap: 8px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            <span>Executive Slide Deck — Light Table</span>
+          </h2>
+          <div style="font-size: 12px; font-family: var(--font-mono); color: var(--accent-cyan);">
+            Click any slide card to jump instantly • Press [G] or [Esc] to exit
+          </div>
+        </div>
+        <button id="btnCloseSlidesGrid" class="btn btn-secondary" style="height: 32px; padding: 0 14px; font-size: 12px;">
+          Close (Esc)
+        </button>
+      </div>
+
+      <div id="slidesGridContainer" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; max-height: 70vh; overflow-y: auto; padding: 6px;">
+        <!-- Populated dynamically by stage-controller.js -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Dynamic Custom Branding Stage Watermark (Task T046) -->
+  <div id="stageWatermark" style="position: fixed; bottom: 36px; right: 20px; font-family: var(--font-mono); font-size: 10px; color: rgba(255,255,255,0.18); letter-spacing: 0.12em; text-transform: uppercase; pointer-events: none; z-index: 40; display: none;">
+    CONFIDENTIAL • INTERNAL REVIEW ONLY
+  </div>
+
+  <!-- ================= DISCREET PRESENTER WHISPER HUD OVERLAY (Task T047) ================= -->
+  <div id="presenterWhisperHUD" style="display: none; position: fixed; top: 112px; right: 24px; max-width: 380px; width: 100%; background: rgba(8, 13, 24, 0.96); backdrop-filter: blur(18px); border: 1px solid rgba(168, 85, 247, 0.5); border-radius: 10px; padding: 14px 16px; z-index: 9997; box-shadow: 0 10px 30px rgba(0,0,0,0.8);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C084FC" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+        <span id="whisperCategoryBadge" class="cyber-badge" style="font-size: 9px; padding: 1px 6px; border-color: #A855F7; color: #C084FC;">WHISPER • DEFENSE</span>
+      </div>
+      <button id="btnCloseWhisper" class="btn btn-secondary" style="height: 22px; width: 22px; padding: 0; display: inline-flex; align-items: center; justify-content: center;">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
+    <div id="whisperTitle" style="font-size: 12px; font-weight: 700; color: #F8FAFC; margin-bottom: 4px; line-height: 1.4;">
+      Objection Defense
+    </div>
+    <div id="whisperContent" style="font-size: 11px; color: #CBD5E1; line-height: 1.5; font-family: var(--font-mono);">
+      Discreet talking points pushed from the Presenter War Room appear here.
+    </div>
+  </div>
+
+  <!-- ================= EXECUTIVE VOICE KARAOKE SUBTITLE TICKER & MULTI-LINGUAL ENGINE (Task T048 & T069) ================= -->
+  <div id="narrationKaraokeTicker" style="display: none; position: fixed; bottom: 44px; left: 50%; transform: translateX(-50%); max-width: 920px; width: 92%; background: rgba(7, 10, 16, 0.95); backdrop-filter: blur(24px); border: 1px solid rgba(0, 240, 255, 0.35); border-radius: 9999px; padding: 8px 20px; z-index: 9995; box-shadow: 0 12px 40px rgba(0,0,0,0.85); align-items: center; justify-content: space-between; gap: 12px;">
+    <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#00F0FF" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+      <span class="cyber-badge badge-cyan" style="font-size: 9px; padding: 1px 6px;">AI NARRATOR</span>
+      <select id="narratorLangSelect" style="background: #0B1322; border: 1px solid rgba(0, 240, 255, 0.4); border-radius: 6px; color: #F8FAFC; height: 24px; padding: 0 6px; font-size: 10px; font-family: var(--font-mono); outline: none; cursor: pointer;" title="Select Subtitle & Narration Language">
+        <option value="en">EN (English)</option>
+        <option value="ja">JA (日本語)</option>
+        <option value="de">DE (Deutsch)</option>
+        <option value="es">ES (Español)</option>
+        <option value="fr">FR (Français)</option>
+        <option value="zh">ZH (中文)</option>
+        <option value="bn">BN (বাংলা)</option>
+      </select>
+    </div>
+    <div id="karaokeTickerText" style="flex: 1; font-size: 13px; font-weight: 500; color: #E2E8F0; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: var(--font-sans);">
+      Voiceover script loading...
+    </div>
+    <button id="btnStopNarration" class="btn btn-secondary" style="height: 24px; padding: 0 8px; font-size: 10px; display: inline-flex; align-items: center; gap: 4px;" title="Stop Voiceover (Esc or V)">
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      <span>Stop</span>
+    </button>
+  </div>
+
+  <!-- ================= AUDIENCE LIVE Q&A SPOTLIGHT MODAL (Task T049) ================= -->
+  <div id="audienceQASpotlightHUD" style="display: none; position: fixed; top: 112px; left: 50%; transform: translateX(-50%); max-width: 640px; width: 90%; background: rgba(8, 13, 24, 0.97); backdrop-filter: blur(20px); border: 1px solid rgba(0, 240, 255, 0.6); border-radius: 12px; padding: 18px 22px; z-index: 9997; box-shadow: 0 14px 45px rgba(0,240,255,0.25);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#00F0FF" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+        <span class="cyber-badge badge-cyan" style="font-size: 9px; padding: 1px 7px;">AUDIENCE QUESTION • SPOTLIGHT</span>
+        <span id="spotlightQuestionAuthor" style="font-size: 11px; font-family: var(--font-mono); color: #94A3B8;">by Audience Member</span>
+      </div>
+      <button id="btnCloseSpotlightQuestion" class="btn btn-secondary" style="height: 24px; width: 24px; padding: 0; display: inline-flex; align-items: center; justify-content: center;" title="Dismiss Question (Esc or U)">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
+    <div id="spotlightQuestionText" style="font-size: 16px; font-weight: 600; color: #FFFFFF; line-height: 1.5; margin-bottom: 10px;">
+      Question loading...
+    </div>
+    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11px; font-family: var(--font-mono); color: var(--text-muted);">
+      <span id="spotlightQuestionUpvotes" style="display: inline-flex; align-items: center; gap: 4px;">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>
+        <span>1 Upvote</span>
+      </span>
+      <span style="color: var(--accent-cyan);">Press [U] or [Esc] to dismiss spotlight</span>
+    </div>
+  </div>
+
+  <!-- ================= FLOATING FROSTED GLASS EXECUTIVE DOCK (Task T054, UI/UX Pro Max) ================= -->
+  <aside id="executiveDock" aria-label="Executive Stage Control Dock" style="position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 8px; background: rgba(7, 10, 16, 0.82); backdrop-filter: blur(28px); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 9999px; padding: 6px 14px; box-shadow: 0 16px 45px rgba(0, 0, 0, 0.75), 0 0 1px rgba(0, 240, 255, 0.3); z-index: 9991; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);">
+    
+    <!-- Prev / Next Stage Buttons -->
+    <div style="display: flex; align-items: center; gap: 4px;">
+      <button id="dockBtnPrev" class="dock-btn" title="Previous Slide (←)" aria-label="Previous Slide">
+        ‹
+      </button>
+      <div id="dockStagePills" style="display: flex; align-items: center; gap: 3px;">
+        <button class="dock-pill active" data-stage="0" title="Slide 1: Hero">1</button>
+        <button class="dock-pill" data-stage="1" title="Slide 2: Architecture">2</button>
+        <button class="dock-pill" data-stage="2" title="Slide 3: Sandbox">3</button>
+        <button class="dock-pill" data-stage="3" title="Slide 4: Mockups">4</button>
+        <button class="dock-pill" data-stage="4" title="Slide 5: Bento ROI">5</button>
+        <button class="dock-pill" data-stage="5" title="Slide 6: Remote">6</button>
+      </div>
+      <button id="dockBtnNext" class="dock-btn" title="Next Slide (→ or Space)" aria-label="Next Slide">
+        ›
+      </button>
+    </div>
+
+    <div style="width: 1px; height: 18px; background: rgba(255,255,255,0.15); margin: 0 4px;"></div>
+
+    <!-- Executive Features -->
+    <button id="dockBtnPalette" class="dock-tool-btn" title="Executive Command Palette (Cmd+K)" aria-label="Command Palette">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 3a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3H6a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3V6a3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3h12a3 3 0 0 0 3-3 3 3 0 0 0-3-3z"></path></svg>
+      <span class="dock-label">Palette</span>
+    </button>
+
+    <button id="dockBtnDirector" class="dock-tool-btn" title="Cinematic Director Mode (C)" aria-label="Toggle Director Mode">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 7l-7 5 7 5V7z"></path><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
+      <span class="dock-label">Director (C)</span>
+    </button>
+
+    <button id="dockBtnSoundscape" class="dock-tool-btn" title="Executive Ambient Soundscape (M)" aria-label="Toggle Ambient Soundscape">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+      <span class="dock-label">Ambience (M)</span>
+    </button>
+
+    <button id="dockBtnVoice" class="dock-tool-btn" title="Executive Voiceover (V)" aria-label="Toggle Voiceover">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+      <span class="dock-label">Voice (V)</span>
+    </button>
+
+    <button id="dockBtnRecord" class="dock-tool-btn" title="Record Presentation Session (R)" aria-label="Record Session">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="3" fill="#EF4444"></circle></svg>
+      <span class="dock-label">Record (R)</span>
+    </button>
+
+    <button id="dockBtnTheme" class="dock-tool-btn" title="Cycle Spatial 3D Theme (Shift+T)" aria-label="Cycle 3D Shader Theme">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.563-2.512 5.563-5.563C22 6.5 17.5 2 12 2z"></path></svg>
+      <span class="dock-label">Theme</span>
+    </button>
+
+    <button id="dockBtnPrompter" class="dock-tool-btn" title="Executive Teleprompter HUD (T)" aria-label="Teleprompter HUD">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+      <span class="dock-label">Prompter (T)</span>
+    </button>
+
+    <button id="dockBtnScenario" class="dock-tool-btn" title="Dynamic What-If Scenario Engine (Y)" aria-label="Scenario Engine">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="6" y1="3" x2="6" y2="15"></line><circle cx="18" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><path d="M18 9a9 9 0 0 1-9 9"></path></svg>
+      <span class="dock-label">Scenario (Y)</span>
+    </button>
+
+    <button id="dockBtnTeaser" class="dock-tool-btn" title="Generate Cinematic Teaser Video (K)" aria-label="Record Teaser Video">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect><line x1="7" y1="2" x2="7" y2="22"></line><line x1="17" y1="2" x2="17" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line><line x1="2" y1="7" x2="7" y2="7"></line><line x1="2" y1="17" x2="7" y2="17"></line><line x1="17" y1="17" x2="22" y2="17"></line><line x1="17" y1="7" x2="22" y2="7"></line></svg>
+      <span class="dock-label">Teaser (K)</span>
+    </button>
+
+    <button id="dockBtnVector" class="dock-tool-btn" title="Export 4K Vector SVG Slides" aria-label="Vector Slide Exporter">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path><path d="M2 2l7.586 7.586"></path><circle cx="11" cy="11" r="2"></circle></svg>
+      <span class="dock-label">Vector</span>
+    </button>
+
+    <button id="dockBtnPoll" class="dock-tool-btn" title="Audience Live Poll Visualizer (O)" aria-label="Live Poll Visualizer">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+      <span class="dock-label">Poll (O)</span>
+    </button>
+
+    <button id="dockBtnCompare" class="dock-tool-btn" title="Multi-Deck Comparison Matrix (J)" aria-label="Project Comparison Matrix">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="18" r="3"></circle><circle cx="6" cy="6" r="3"></circle><path d="M13 6h3a2 2 0 0 1 2 2v7"></path><line x1="6" y1="9" x2="6" y2="21"></line></svg>
+      <span class="dock-label">Compare (J)</span>
+    </button>
+
+    <button id="dockBtnBriefing" class="dock-tool-btn" title="Executive 1-Page Briefing Sheet (B)" aria-label="Executive Briefing Exporter">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+      <span class="dock-label">Briefing (B)</span>
+    </button>
+
+    <button id="dockBtnTrace" class="dock-tool-btn" title="Packet Flow Trace (Z)" aria-label="Packet Flow Trace">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+      <span class="dock-label">Trace (Z)</span>
+    </button>
+
+    <button id="dockBtnAudit" class="dock-tool-btn" title="Pitch Readiness Audit (I)" aria-label="Pitch Readiness Audit">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>
+      <span class="dock-label">Audit (I)</span>
+    </button>
+
+    <button id="dockBtnMirror" class="dock-tool-btn" title="Launch Dual-Screen Presenter Mirror" aria-label="Presenter Mirror">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+      <span class="dock-label">Mirror</span>
+    </button>
+
+    <button id="dockBtnTimeMachine" class="dock-tool-btn" title="Architecture Evolution Time-Machine (Shift+M)" aria-label="Architecture Time-Machine">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+      <span class="dock-label">Time</span>
+    </button>
+
+    <button id="dockBtnFinOps" class="dock-tool-btn" title="Cloud FinOps & Infrastructure Economics (Shift+F)" aria-label="Cloud FinOps Calculator">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+      <span class="dock-label">FinOps</span>
+    </button>
+
+    <button id="dockBtnHeatmap" class="dock-tool-btn" title="Live Audience Attention Heatmap (Shift+H)" aria-label="Audience Heatmap HUD">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10"></path><path d="M12 20V4"></path><path d="M6 20v-6"></path></svg>
+      <span class="dock-label">Heatmap</span>
+    </button>
+
+    <button id="dockBtnSubtitles" class="dock-tool-btn" title="Multi-Language Keynote Subtitles (Shift+S)" aria-label="Multi-Language Subtitles">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+      <span class="dock-label">Subtitles</span>
+    </button>
+
+    <button id="dockBtnWatermark" class="dock-tool-btn" title="Keynote Watermarking & DRM (Shift+W)" aria-label="Keynote Watermark DRM">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+      <span class="dock-label">DRM</span>
+    </button>
+
+    <button id="dockBtnCopilot" class="dock-tool-btn" title="Architecture Voice AI Copilot (Shift+A)" aria-label="Architecture Copilot">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+      <span class="dock-label">Copilot</span>
+    </button>
+
+    <button id="dockBtnWaterfall" class="dock-tool-btn" title="Live Distributed Latency Waterfall (Shift+P)" aria-label="Latency Waterfall">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+      <span class="dock-label">Waterfall</span>
+    </button>
+
+    <button id="dockBtnMermaid" class="dock-tool-btn" title="Export Mermaid.js & Markdown Spec" aria-label="Export Mermaid Architecture">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="8 10 12 14 16 10"></polyline></svg>
+      <span class="dock-label">Mermaid</span>
+    </button>
+
+    <button id="dockBtnChaos" class="dock-tool-btn" title="Live Distributed Chaos Engineering HUD (Shift+C)" aria-label="Chaos Engineering">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+      <span class="dock-label">Chaos</span>
+    </button>
+
+    <button id="dockBtnRehearsal" class="dock-tool-btn" title="Pitch Rehearsal AI Verbal Pace Scorecard (Shift+R)" aria-label="Pitch Rehearsal Scorecard">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line></svg>
+      <span class="dock-label">Rehearse</span>
+    </button>
+
+    <button id="dockBtnPackager" class="dock-tool-btn" title="Export Executive 4K Slide Deck & Briefing Package" aria-label="Executive Deck Packager">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+      <span class="dock-label">Package</span>
+    </button>
+
+    <button id="dockBtnTopologyDiff" class="dock-tool-btn" title="Autonomous Architecture Topology Diff & Version Comparator HUD (Shift+D)" aria-label="Topology Comparator">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="18" r="3"></circle><circle cx="6" cy="6" r="3"></circle><path d="M13 6h3a2 2 0 0 1 2 2v7"></path><line x1="6" y1="9" x2="6" y2="21"></line></svg>
+      <span class="dock-label">Diff</span>
+    </button>
+
+    <button id="dockBtnThreat" class="dock-tool-btn" title="Architectural Threat Modeling & STRIDE Security Posture Scorecard (Shift+E)" aria-label="Threat Modeler">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="m9 12 2 2 4-4"></path></svg>
+      <span class="dock-label">STRIDE</span>
+    </button>
+
+    <button id="dockBtnSentiment" class="dock-tool-btn" title="Real-Time Audience Sentiment Cloud & Opinion Pulse (Shift+O)" aria-label="Sentiment Cloud">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path><polyline points="8 10 10 8 12 12 14 9 16 11"></polyline></svg>
+      <span class="dock-label">Pulse</span>
+    </button>
+
+    <button id="dockBtnDR" class="dock-tool-btn" title="Multi-Cloud Disaster Recovery Failover Simulator & RTO/RPO HUD (Shift+Y)" aria-label="Disaster Recovery HUD">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path><polyline points="13 13 16 16 19 13"></polyline></svg>
+      <span class="dock-label">DR</span>
+    </button>
+
+    <button id="dockBtnCompliance" class="dock-tool-btn" title="SOC 2, ISO 27001 & HIPAA Compliance Evidence Ledger (Shift+U)" aria-label="Compliance Ledger">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+      <span class="dock-label">SOC 2</span>
+    </button>
+
+    <button id="dockBtnPoster" class="dock-tool-btn" title="Executive 4K Slide Poster & Starchart Renderer (Shift+B)" aria-label="Slide Poster Renderer">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+      <span class="dock-label">Poster</span>
+    </button>
+
+    <button id="dockBtnObjection" class="dock-tool-btn" title="Executive AI Objection Defense & Investor Q&A Simulator (Shift+X)" aria-label="Objection Defense">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="M12 8v4"></path><path d="M12 16h.01"></path></svg>
+      <span class="dock-label">Defense</span>
+    </button>
+
+    <button id="dockBtnVoiceCmd" class="dock-tool-btn" title="Hands-Free Voice Commander HUD (Shift+V)" aria-label="Voice Commander">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg>
+      <span class="dock-label">Voice</span>
+    </button>
+
+    <button id="dockBtnGesture" class="dock-tool-btn" title="Optical Spatial Gesture Navigation (Shift+G)" aria-label="Gesture Navigation">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v5"></path><path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"></path><path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"></path><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"></path></svg>
+      <span class="dock-label">Gesture</span>
+    </button>
+
+    <button id="dockBtnWhiteLabel" class="dock-tool-btn" title="Enterprise White-Label Brand Injector (Shift+L)" aria-label="White-Label Manager">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>
+      <span class="dock-label">Brand</span>
+    </button>
+
+    <button id="dockBtnClientPortal" class="dock-tool-btn" title="Executive Client Presentation Portal Gateway (Shift+J)" aria-label="Client Portal">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+      <span class="dock-label">Portal</span>
+    </button>
+
+    <button id="dockBtnRehearsalPlaybook" class="dock-tool-btn" title="Human Rehearsal Playbook & Speech Cadence Coach (Shift+Z)" aria-label="Rehearsal Playbook">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline><path d="M19.07 4.93A10 10 0 0 0 4.93 19.07"></path></svg>
+      <span class="dock-label">Coach</span>
+    </button>
+
+    <div style="width: 1px; height: 18px; background: rgba(255,255,255,0.15); margin: 0 4px;"></div>
+
+    <!-- Presentation Tools -->
+    <button id="dockBtnLaser" class="dock-tool-btn" title="Laser Pointer (L)" aria-label="Laser Pointer">
+      <span style="display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #EF4444; box-shadow: 0 0 6px #EF4444;"></span>
+      <span class="dock-label">Laser (L)</span>
+    </button>
+
+    <button id="dockBtnSpotlight" class="dock-tool-btn" title="Spotlight Mode (S)" aria-label="Spotlight Mode">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+      <span class="dock-label">Spot (S)</span>
+    </button>
+
+    <button id="dockBtnPen" class="dock-tool-btn" title="Neon Drawing Pen (D)" aria-label="Neon Drawing Pen">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+      <span class="dock-label">Pen (D)</span>
+    </button>
+
+    <div style="width: 1px; height: 18px; background: rgba(255,255,255,0.15); margin: 0 4px;"></div>
+
+    <!-- Overlays & Views -->
+    <button id="dockBtnNotes" class="dock-tool-btn" title="Speaker Notes HUD (N)" aria-label="Speaker Notes HUD">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+    </button>
+
+    <button id="dockBtnGrid" class="dock-tool-btn" title="Slide Grid (G)" aria-label="Slide Grid Overview">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+    </button>
+
+    <button id="dockBtnQr" class="dock-tool-btn" title="Audience QR Remote (Q)" aria-label="Audience QR Remote">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
+    </button>
+
+    <button id="dockBtnFullscreen" class="dock-tool-btn" title="Toggle Fullscreen (F)" aria-label="Toggle Fullscreen">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
+    </button>
+  </aside>
+
+  <!-- ================= AUDIENCE LIVE POLL STAGE VISUALIZER HUD (Task T073, UI/UX Pro Max) ================= -->
+  <div id="audienceLivePollHUD" style="display: none; position: fixed; top: 100px; right: 28px; width: 440px; max-width: 92vw; background: rgba(7, 10, 18, 0.94); backdrop-filter: blur(28px); border: 1px solid rgba(0, 240, 255, 0.45); border-radius: 16px; padding: 20px 22px; z-index: 9996; box-shadow: 0 16px 50px rgba(0,0,0,0.85), 0 0 25px rgba(0,240,255,0.2);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #00F0FF; box-shadow: 0 0 10px #00F0FF;"></span>
+        <span class="cyber-badge badge-cyan" style="font-size: 10px;">LIVE AUDIENCE POLL</span>
+        <span id="stagePollStatusBadge" class="cyber-badge badge-emerald" style="font-size: 9px;">ACTIVE</span>
+      </div>
+      <button id="btnCloseStagePollHUD" class="btn btn-secondary" style="height: 24px; width: 24px; padding: 0; display: inline-flex; align-items: center; justify-content: center;" title="Dismiss (Hotkey O or Esc)">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
+
+    <div id="stagePollQuestion" style="font-size: 15px; font-weight: 700; color: #FFFFFF; line-height: 1.45; margin-bottom: 14px;">
+      Is this architecture ready for Tier-1 Enterprise Production deployment?
+    </div>
+
+    <!-- Live Poll Option Bars Container -->
+    <div id="stagePollOptionsList" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px;">
+      <!-- Populated dynamically via JS -->
+    </div>
+
+    <!-- Poll Footer Stats & Winner Banner -->
+    <div id="stagePollWinnerBanner" style="display: none; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.5); border-radius: 8px; padding: 8px 12px; margin-bottom: 10px; text-align: center;">
+      <span style="font-size: 11px; font-family: var(--font-mono); color: #10B981; font-weight: 700;">WINNER: <span id="stagePollWinnerText">--</span></span>
+    </div>
+
+    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11px; font-family: var(--font-mono); color: var(--text-muted); border-top: 1px solid rgba(255,255,255,0.08); padding-top: 10px;">
+      <span id="stagePollTotalVotes" style="display: inline-flex; align-items: center; gap: 5px;">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+        <span>81 Total Votes</span>
+      </span>
+      <span style="color: var(--accent-cyan);">Hotkey [O] to toggle</span>
+    </div>
+  </div>
+
+  <!-- ================= EXECUTIVE VECTOR SLIDE EXPORTER MODAL (Task T072) ================= -->
+  <div id="vectorExportModal" style="display: none; position: fixed; inset: 0; background: rgba(3, 5, 8, 0.88); backdrop-filter: blur(20px); z-index: 9998; align-items: center; justify-content: center;">
+    <div style="background: #080D18; border: 1px solid rgba(0, 240, 255, 0.4); border-radius: 16px; padding: 26px; width: 520px; max-width: 92vw; box-shadow: 0 20px 60px rgba(0,0,0,0.9), 0 0 35px rgba(0, 240, 255, 0.2);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00F0FF" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path><path d="M2 2l7.586 7.586"></path><circle cx="11" cy="11" r="2"></circle></svg>
+          <div>
+            <h3 style="font-size: 16px; font-weight: 800; color: #F8FAFC; margin: 0;">Vector Slide Export Studio</h3>
+            <span style="font-size: 11px; color: var(--accent-cyan); font-family: var(--font-mono);">PRISTINE 4K RESOLUTION-INDEPENDENT SVG</span>
+          </div>
+        </div>
+        <button id="btnCloseVectorModal" class="btn btn-secondary" style="height: 26px; width: 26px; padding: 0; display: inline-flex; align-items: center; justify-content: center;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <p style="font-size: 12px; color: #94A3B8; margin-bottom: 18px; line-height: 1.5;">
+        Generate resolution-independent vector graphics for executive presentations, boardroom laser printing, or direct import into Figma, Keynote, Illustrator, and Canva.
+      </p>
+
+      <!-- Theme Selector -->
+      <div style="margin-bottom: 18px;">
+        <label style="display: block; font-size: 11px; font-family: var(--font-mono); color: var(--accent-cyan); margin-bottom: 6px; text-transform: uppercase;">
+          Select Export Theme:
+        </label>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+          <button class="btn btn-secondary vector-theme-btn active" data-theme="oled" style="border-color: #00F0FF; color: #00F0FF; background: rgba(0,240,255,0.12); font-size: 11px; height: 36px;">
+            OLED Dark
+          </button>
+          <button class="btn btn-secondary vector-theme-btn" data-theme="light" style="font-size: 11px; height: 36px;">
+            Print Light
+          </button>
+          <button class="btn btn-secondary vector-theme-btn" data-theme="transparent" style="font-size: 11px; height: 36px;">
+            Alpha Vector
+          </button>
+        </div>
+      </div>
+
+      <!-- Action Buttons Grid -->
+      <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px;">
+        <button id="btnDownloadCurrentSlideSVG" class="btn btn-primary" style="height: 42px; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          <span>Download Current Slide (<span id="vectorCurrentSlideLabel">Slide 1</span>) as SVG</span>
+        </button>
+
+        <button id="btnCopySlideSVG" class="btn btn-secondary" style="height: 38px; font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; border-color: rgba(255,255,255,0.2);">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+          <span>Copy Slide SVG to Clipboard (for Figma / Illustrator)</span>
+        </button>
+
+        <button id="btnDownloadFullDeckPackage" class="btn btn-secondary" style="height: 42px; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px; border-color: #10B981; color: #10B981; background: rgba(16,185,129,0.1);">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+          <span>Download Full 6-Slide Vector Deck Package (HTML + All SVGs)</span>
+        </button>
+      </div>
+
+      <div style="font-size: 10px; font-family: var(--font-mono); color: #64748B; text-align: center;">
+        ZERO-UPLOAD GUARANTEE • 100% PURE CLIENT-SIDE VECTOR SYNTHESIS
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= IN-STAGE LIVE NODE ARCHITECTURE MODIFIER (Task T058) ================= -->
+  <div id="addNodeModal" style="display: none; position: fixed; inset: 0; background: rgba(3, 5, 8, 0.85); backdrop-filter: blur(16px); z-index: 9998; align-items: center; justify-content: center;">
+    <div style="background: #080D18; border: 1px solid rgba(0, 240, 255, 0.4); border-radius: 14px; padding: 24px; width: 440px; max-width: 90vw; box-shadow: 0 20px 50px rgba(0,0,0,0.85), 0 0 30px rgba(0, 240, 255, 0.15);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00F0FF" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          <h3 style="font-size: 14px; font-weight: 700; color: #F8FAFC; margin: 0;">Add Living Microservice Node</h3>
+        </div>
+        <button id="btnCloseAddNodeModal" class="btn btn-secondary" style="height: 24px; width: 24px; padding: 0; display: inline-flex; align-items: center; justify-content: center;">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+      
+      <p style="font-size: 11px; color: #94A3B8; margin-bottom: 16px; line-height: 1.5;">
+        Inject a new reactive microservice node into the live pipeline architecture. It will be rendered instantly across both the 2D SVG canvas and the 3D Holodeck starfield.
+      </p>
+
+      <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+        <div>
+          <label style="display: block; font-size: 10px; font-family: var(--font-mono); color: var(--accent-cyan); margin-bottom: 4px; text-transform: uppercase;">
+            Node Name / Service Label
+          </label>
+          <input type="text" id="newNodeLabel" placeholder="e.g. Audit Logger, Vector Cache..." style="width: 100%; height: 36px; background: #0B1220; border: 1px solid #1E2D44; border-radius: 6px; color: #F8FAFC; padding: 0 12px; font-size: 12px; outline: none; box-sizing: border-box;">
+        </div>
+
+        <div>
+          <label style="display: block; font-size: 10px; font-family: var(--font-mono); color: var(--accent-cyan); margin-bottom: 4px; text-transform: uppercase;">
+            Category / Badge Type
+          </label>
+          <select id="newNodeBadge" style="width: 100%; height: 36px; background: #0B1220; border: 1px solid #1E2D44; border-radius: 6px; color: #F8FAFC; padding: 0 10px; font-size: 12px; outline: none; box-sizing: border-box;">
+            <option value="STORAGE">STORAGE (Emerald / Database)</option>
+            <option value="AI / ML">AI / ML (Violet / Neural)</option>
+            <option value="SECURITY">SECURITY (Rose / Auth)</option>
+            <option value="PIPELINE">PIPELINE (Cyan / Engine)</option>
+            <option value="GATEWAY">GATEWAY (Amber / Edge)</option>
+          </select>
+        </div>
+
+        <div>
+          <label style="display: block; font-size: 10px; font-family: var(--font-mono); color: var(--accent-cyan); margin-bottom: 4px; text-transform: uppercase;">
+            Service Responsibility
+          </label>
+          <input type="text" id="newNodeDesc" placeholder="e.g. Low-latency vector memory store for RAG..." style="width: 100%; height: 36px; background: #0B1220; border: 1px solid #1E2D44; border-radius: 6px; color: #F8FAFC; padding: 0 12px; font-size: 12px; outline: none; box-sizing: border-box;">
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 8px;">
+        <button id="btnCancelAddNode" class="btn btn-secondary" style="height: 34px; padding: 0 16px; font-size: 12px;">Cancel</button>
+        <button id="btnConfirmAddNode" class="btn btn-primary" style="height: 34px; padding: 0 18px; font-size: 12px; display: inline-flex; align-items: center; gap: 6px;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+          <span>Inject Node</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stage Weapons: Live Neon Drawing Pen Canvas -->
+  <canvas id="drawingPenCanvas" style="position: fixed; inset: 0; pointer-events: none; z-index: 9992; width: 100vw; height: 100vh;"></canvas>
+
+  <!-- Stage-Side 120 FPS Floating Emoji Physics Canvas -->
+  <canvas id="floatingEmojiCanvas" style="position: fixed; inset: 0; pointer-events: none; z-index: 9990; width: 100vw; height: 100vh;"></canvas>
+
+  <script type="module" src="src/components/resilience-boundary.js"></script>
+  <script type="module" src="src/components/stage-controller.js"></script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AudienceRemoteEventsContract",
+  "type": "object",
+  "required": ["sessionId", "type", "timestamp"],
+  "properties": {
+    "sessionId": { "type": "string" },
+    "type": {
+      "type": "string",
+      "enum": ["emoji_burst", "poll_vote", "trigger_webhook", "ping"]
+    },
+    "payload": {
+      "type": "object",
+      "properties": {
+        "emoji": {
+          "type": "string",
+          "enum": ["🔥", "🚀", "💡", "👏", "⚡"]
+        },
+        "optionIndex": { "type": "integer" },
+        "customWebhookPayload": { "type": "object" }
+      }
+    },
+    "timestamp": { "type": "number" }
+  }
+}

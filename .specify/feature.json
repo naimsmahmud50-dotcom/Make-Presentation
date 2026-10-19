@@ -1,0 +1,7 @@
+{
+  "feature_directory": "specs/001-apexflow-platform",
+  "active_spec": "specs/001-apexflow-platform/spec.md",
+  "active_plan": "specs/001-apexflow-platform/plan.md",
+  "active_tasks": "specs/001-apexflow-platform/tasks.md",
+  "version": "1.0.0"
+}

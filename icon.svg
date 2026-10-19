@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#070B14"/>
+      <stop offset="100%" stop-color="#020408"/>
+    </linearGradient>
+    <linearGradient id="cyanGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00F0FF"/>
+      <stop offset="100%" stop-color="#0080FF"/>
+    </linearGradient>
+    <linearGradient id="neonGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10B981"/>
+      <stop offset="100%" stop-color="#00F0FF"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="12" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Background rounded hexagon container -->
+  <rect width="512" height="512" rx="112" fill="url(#bgGrad)"/>
+  <rect width="504" height="504" x="4" y="4" rx="108" fill="none" stroke="rgba(0, 240, 255, 0.3)" stroke-width="6"/>
+
+  <!-- Geometric Circuit Grid Accent -->
+  <path d="M64 256 H448 M256 64 V448" stroke="rgba(0, 240, 255, 0.08)" stroke-width="2"/>
+  <circle cx="256" cy="256" r="160" fill="none" stroke="rgba(0, 240, 255, 0.12)" stroke-width="2" stroke-dasharray="8 8"/>
+
+  <!-- Core Apex Prism Glyphs -->
+  <polygon points="256,96 416,384 96,384" fill="none" stroke="url(#cyanGrad)" stroke-width="20" stroke-linejoin="round" filter="url(#glow)"/>
+  <polygon points="256,160 368,360 144,360" fill="none" stroke="url(#neonGrad)" stroke-width="12" stroke-linejoin="round"/>
+  
+  <!-- Central Core Quantum Node -->
+  <circle cx="256" cy="270" r="28" fill="#00F0FF" filter="url(#glow)"/>
+  <circle cx="256" cy="270" r="14" fill="#020408"/>
+  <circle cx="256" cy="270" r="6" fill="#10B981"/>
+
+  <!-- Top, Left, Right Satellites -->
+  <circle cx="256" cy="96" r="14" fill="#00F0FF"/>
+  <circle cx="416" cy="384" r="14" fill="#0080FF"/>
+  <circle cx="96" cy="384" r="14" fill="#10B981"/>
+</svg>

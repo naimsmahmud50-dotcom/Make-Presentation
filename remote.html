@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<!--
+  =========================================================================================
+  MODULE: APEXFLOW OS — Audience Mobile Smart Phone Remote PWA
+  -----------------------------------------------------------------------------------------
+  [PAGE HIGHLIGHT: remote.html — Mobile Supabase Realtime Controller & Audience Remote]
+  -----------------------------------------------------------------------------------------
+  ARCHITECTURAL ROLE:
+  Zero-install mobile web application designed for smartphones. Audience members scan
+  the Stage QR code to connect their phone as an interactive companion:
+    1. Instant 120 FPS Reaction Pad with Dual-Relay (Air-gap BroadcastChannel + Supabase Cloud)
+    2. Real-Time Interactive Audience Polling with live dynamic bar updates
+    3. Live Webhook Trigger: Inject simulated payloads directly into presenter's terminal
+    4. Remote Stage Navigation: Next/Prev controls for presenter mobility
+    5. Audience Live Q&A Backchannel: Submit questions and upvote peer inquiries (T049)
+    6. Multi-Tenant Supabase Cloud Mesh: Cross-auditorium remote sync with zero upload air-gap fallback
+  
+  UI/UX PRO MAX MOBILE INTELLIGENCE:
+    - Minimum 48x48px thumb-friendly touch targets with active scale feedback
+    - OLED `#070A10` deep black aesthetic with crisp 1px borders
+    - Real-time event synchronization via BroadcastChannel & LocalStorage fallback
+  =========================================================================================
+-->
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#070A10">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>APEXFLOW • Audience Mobile Remote</title>
+  
+  <!-- Autonomous Offline PWA Manifest & Icons (Task T104) -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml" href="icon.svg">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="src/styles/main.css">
+  <link rel="stylesheet" href="src/styles/shaders.css">
+
+  <style>
+    body {
+      background: #06090F;
+      color: #F8FAFC;
+      font-family: var(--font-sans);
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      overflow-x: hidden;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .reaction-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .reaction-btn {
+      height: 84px;
+      background: #0E1524;
+      border: 1px solid #1E2D44;
+      border-radius: 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: all 0.12s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    .reaction-btn:active {
+      transform: scale(0.92);
+      background: #16243C;
+      border-color: #00F0FF;
+      box-shadow: 0 0 20px rgba(0,240,255,0.4);
+    }
+
+    .poll-option-card {
+      background: #0B1220;
+      border: 1px solid #1A273D;
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.15s ease;
+    }
+
+    .poll-option-card:active {
+      border-color: #38BDF8;
+    }
+
+    .poll-bar-fill {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      background: rgba(56, 189, 248, 0.15);
+      border-right: 2px solid #38BDF8;
+      transition: width 0.4s ease;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Mobile Bar -->
+  <header style="padding: 16px 20px; background: rgba(10, 15, 26, 0.95); border-bottom: 1px solid #1A273D; display: flex; justify-content: space-between; align-items: center; backdrop-filter: blur(12px); position: sticky; top: 0; z-index: 100;">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <div style="width: 8px; height: 8px; border-radius: 50%; background: #10B981; box-shadow: 0 0 8px #10B981;"></div>
+      <div style="font-size: 13px; font-weight: 700; letter-spacing: 0.5px;">APEXFLOW REMOTE</div>
+    </div>
+    <span id="remoteConnBadge" class="cyber-badge badge-emerald" style="font-size: 10px; padding: 2px 8px;">
+      ● CONNECTED
+    </span>
+  </header>
+ 
+  <!-- [PAGE HIGHLIGHT: remote.html — Supabase Realtime Cloud Mesh Room Pairing] -->
+  <div id="remoteCloudPairingBar" style="padding: 8px 16px; background: #080D17; border-bottom: 1px solid #16243A; display: flex; justify-content: space-between; align-items: center; font-family: var(--font-mono); font-size: 11px;">
+    <div style="display: flex; align-items: center; gap: 6px; flex: 1;">
+      <span style="color: #64748B;">ROOM:</span>
+      <input type="text" id="remoteRoomInput" value="default_room" placeholder="room_id" style="background: #0B1220; border: 1px solid #1E2D44; border-radius: 4px; color: #38BDF8; font-family: var(--font-mono); font-size: 11px; padding: 2px 8px; width: 110px;">
+      <button id="btnRemoteSyncRoom" class="btn btn-secondary" style="height: 24px; padding: 0 8px; font-size: 10px;">Sync</button>
+    </div>
+    <div id="remoteCloudStatus" style="color: #64748B; font-size: 10px; display: flex; align-items: center; gap: 4px;">
+      <span style="width: 6px; height: 6px; border-radius: 50%; background: #38BDF8; display: inline-block;"></span>
+      <span>AIR-GAP</span>
+    </div>
+  </div>
+
+  <!-- Presenter Rehearsal Telemetry Strip (Task T164) -->
+  <div id="remotePresenterRehearsalStrip" style="display: none; padding: 10px 16px; background: #0B1322; border-bottom: 1px solid rgba(0, 240, 255, 0.25); justify-content: space-between; align-items: center; font-family: var(--font-mono, monospace); font-size: 11px;">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <span style="color: #64748B;">CADENCE:</span>
+      <span id="remoteWpmPill" style="color: #10B981; font-weight: 700;">0 WPM</span>
+      <span id="remotePacePill" class="cyber-badge" style="font-size: 9px; padding: 1px 5px; color: #10B981; border-color: #10B981;">STANDBY</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 6px;">
+      <span style="color: #64748B;">BUDGET:</span>
+      <span id="remoteBudgetTimer" style="color: #00F0FF; font-weight: 700;">01:30</span>
+    </div>
+  </div>
+
+  <!-- Main Mobile Content Area -->
+  <main style="flex: 1; padding: 20px; max-width: 480px; margin: 0 auto; width: 100%; box-sizing: border-box;">
+    
+    <!-- Active Presentation Header -->
+    <div style="margin-bottom: 20px; text-align: center;">
+      <span class="cyber-badge badge-cyan" style="font-size: 10px;">STAGE COMPANION</span>
+      <h1 id="remoteProjectTitle" style="font-size: 20px; font-weight: 800; margin: 8px 0 4px 0; color: #F8FAFC;">
+        Live Presentation
+      </h1>
+      <p style="font-size: 12px; color: #64748B; margin: 0;">Tap reactions below to send live floating reactions to the stage.</p>
+    </div>
+
+    <!-- Section 1: Reaction Pad -->
+    <div style="margin-bottom: 24px;">
+      <div style="font-size: 11px; font-family: var(--font-mono); color: #00F0FF; font-weight: 700; margin-bottom: 10px; letter-spacing: 0.5px;">
+        1. LIVE STAGE REACTIONS (120 FPS)
+      </div>
+
+      <div class="reaction-grid">
+        <button class="reaction-btn" data-reaction="priority">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path>
+          </svg>
+          <span style="font-size: 11px; color: #F59E0B; font-weight: 600;">Priority</span>
+        </button>
+        <button class="reaction-btn" data-reaction="impact">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#00F0FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path>
+            <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path>
+            <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"></path>
+            <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"></path>
+          </svg>
+          <span style="font-size: 11px; color: #00F0FF; font-weight: 600;">Velocity</span>
+        </button>
+        <button class="reaction-btn" data-reaction="endorse">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"></path>
+            <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"></path>
+            <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"></path>
+            <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"></path>
+          </svg>
+          <span style="font-size: 11px; color: #10B981; font-weight: 600;">Endorse</span>
+        </button>
+        <button class="reaction-btn" data-reaction="insight">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FBBF24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 18h6"></path>
+            <path d="M10 22h4"></path>
+            <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5.76.76 1.23 1.52 1.41 2.5"></path>
+          </svg>
+          <span style="font-size: 11px; color: #FBBF24; font-weight: 600;">Insight</span>
+        </button>
+        <button class="reaction-btn" data-reaction="surge">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#A855F7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+          </svg>
+          <span style="font-size: 11px; color: #A855F7; font-weight: 600;">Surge</span>
+        </button>
+        <button class="reaction-btn" data-reaction="signoff">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#EC4899" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+          </svg>
+          <span style="font-size: 11px; color: #EC4899; font-weight: 600;">Sign-Off</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Section 2: Live Audience Polling (Task T073) -->
+    <div style="margin-bottom: 24px;">
+      <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px;">
+        <div style="font-size: 11px; font-family: var(--font-mono); color: #38BDF8; font-weight: 700; letter-spacing: 0.5px;">
+          2. AUDIENCE LIVE POLL
+        </div>
+        <span id="pollVoteStatus" style="font-size: 11px; color: #64748B;">Tap option to vote</span>
+      </div>
+
+      <div style="background: #080D17; border: 1px solid #16243A; border-radius: 14px; padding: 16px;">
+        <div id="mobilePollQuestion" style="font-size: 13px; font-weight: 700; color: #F8FAFC; margin-bottom: 12px; line-height: 1.4;">
+          Which engineering factor is most valuable to your team?
+        </div>
+
+        <div id="mobilePollOptionsList" style="display: flex; flex-direction: column; gap: 8px;">
+          <!-- Rendered dynamically via JS -->
+        </div>
+
+        <div id="mobilePollStatusNotice" style="display: none; margin-top: 10px; font-size: 11px; font-family: var(--font-mono); color: #10B981; text-align: center;">
+          Consensus Recorded • Poll Concluded
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 3: Live Test Webhook Ingestion -->
+    <div style="margin-bottom: 24px;">
+      <div style="font-size: 11px; font-family: var(--font-mono); color: #10B981; font-weight: 700; margin-bottom: 10px; letter-spacing: 0.5px;">
+        3. LIVE TERMINAL WEBHOOK INJECTION
+      </div>
+
+      <div class="cyber-card" style="padding: 16px; background: #080D17;">
+        <p style="font-size: 12px; color: #94A3B8; margin: 0 0 12px 0;">
+          Fire a live synthetic webhook payload from this phone into the presenter's Stage 3 cyber terminal.
+        </p>
+        <button id="btnMobileSendWebhook" class="btn btn-primary" style="width: 100%; height: 44px; font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          <span>Send Webhook Event to Stage</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Section 4: Presenter Navigation Controls -->
+    <div>
+      <div style="font-size: 11px; font-family: var(--font-mono); color: #A855F7; font-weight: 700; margin-bottom: 10px; letter-spacing: 0.5px;">
+        4. STAGE SLIDE CONTROLLER
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <button id="btnRemotePrev" class="btn btn-secondary" style="height: 44px; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+          <span>Prev Slide</span>
+        </button>
+        <button id="btnRemoteNext" class="btn btn-primary" style="height: 44px; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+          <span>Next Slide</span>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Section 5: Live Audience Q&A Backchannel (Task T049) -->
+    <div style="margin-top: 24px; margin-bottom: 24px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <div style="font-size: 11px; font-family: var(--font-mono); color: #F59E0B; font-weight: 700; letter-spacing: 0.5px;">
+          5. AUDIENCE LIVE Q&A BACKCHANNEL
+        </div>
+        <span class="cyber-badge badge-amber" style="font-size: 9px;">LIVE STREAM</span>
+      </div>
+
+      <div class="cyber-card" style="padding: 16px; background: #080D17;">
+        <p style="font-size: 12px; color: #94A3B8; margin: 0 0 10px 0;">
+          Submit questions directly to the presenter's War Room and stage spotlight.
+        </p>
+
+        <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px;">
+          <input type="text" id="mobileAuthorInput" placeholder="Your Name or Title (e.g. Lead Architect)" style="width: 100%; height: 38px; background: #0B1220; border: 1px solid #1E2D44; border-radius: 8px; color: #F8FAFC; padding: 0 12px; font-size: 12px;">
+          <textarea id="mobileQuestionInput" rows="2" placeholder="Ask a question about this architecture..." style="width: 100%; background: #0B1220; border: 1px solid #1E2D44; border-radius: 8px; color: #F8FAFC; padding: 10px 12px; font-size: 12px; font-family: var(--font-sans);"></textarea>
+        </div>
+
+        <button id="btnSubmitQuestion" class="btn btn-primary" style="width: 100%; height: 42px; font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          <span>Send Question to Presenter</span>
+        </button>
+
+        <div id="questionFeedback" style="font-size: 11px; color: #10B981; font-family: var(--font-mono); text-align: center; margin-top: 8px; display: none;">
+          [OK] Question dispatched to War Room!
+        </div>
+
+        <!-- Audience Questions Feed -->
+        <div id="mobileQuestionsFeed" style="margin-top: 14px; display: flex; flex-direction: column; gap: 8px;">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Bottom Safe Area Footer -->
+  <footer style="padding: 14px 20px; text-align: center; font-size: 11px; font-family: var(--font-mono); color: #475569; border-top: 1px solid #141E2D; background: #05080E;">
+    APEXFLOW OS v1.0.0 • Mobile WebRTC Node
+  </footer>
+
+  <script type="module">
+    import { remoteSync, escapeHTML } from './src/lib/remote/remote-sync.js';
+    import { soundEngine } from './src/lib/audio/sound-synth.js';
+    import { supabaseRealtime } from './src/lib/remote/supabase-sync.js';
+
+    // 1. Hook Reaction buttons (Dual Broadcast: Local Air-Gap + Supabase Cloud)
+    document.querySelectorAll('.reaction-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        soundEngine.playClick();
+        if (navigator.vibrate) navigator.vibrate(25);
+        const reaction = btn.dataset.reaction || 'priority';
+        remoteSync.sendReaction(reaction);
+        supabaseRealtime.broadcast('REACTION_BURST', { reactionType: reaction });
+      });
+    });
+
+    // 2. Dynamic Live Audience Polling Engine (Task T073)
+    let currentPoll = remoteSync.getActivePoll();
+    let userVotedOptionId = null;
+
+    function renderDynamicMobilePoll(poll) {
+      if (!poll) return;
+      currentPoll = poll;
+
+      const qEl = document.getElementById('mobilePollQuestion');
+      const listEl = document.getElementById('mobilePollOptionsList');
+      const noticeEl = document.getElementById('mobilePollStatusNotice');
+      const statusEl = document.getElementById('pollVoteStatus');
+
+      if (qEl && poll.question) {
+        qEl.textContent = poll.question;
+      }
+
+      if (noticeEl) {
+        if (poll.status === 'CLOSED') {
+          noticeEl.style.display = 'block';
+          noticeEl.textContent = `Consensus Winner: ${poll.winner || 'Consensus Reached'}`;
+        } else {
+          noticeEl.style.display = 'none';
+        }
+      }
+
+      if (statusEl) {
+        if (userVotedOptionId) {
+          statusEl.textContent = '[RECORDED] Vote submitted successfully';
+          statusEl.style.color = '#10B981';
+        } else if (poll.status === 'CLOSED') {
+          statusEl.textContent = 'Voting closed';
+          statusEl.style.color = '#EF4444';
+        } else {
+          statusEl.textContent = 'Tap option to vote';
+          statusEl.style.color = '#64748B';
+        }
+      }
+
+      if (!listEl) return;
+      listEl.innerHTML = '';
+
+      const totalVotes = poll.totalVotes || 0;
+      const options = poll.options || [];
+
+      options.forEach((opt, idx) => {
+        const votes = opt.votes || 0;
+        const pct = totalVotes > 0 ? Math.round((votes / totalVotes) * 100) : 0;
+        const isSelected = (userVotedOptionId === opt.id);
+        const isWinner = (poll.status === 'CLOSED' && poll.winnerId === opt.id);
+
+        const card = document.createElement('div');
+        card.className = 'poll-option-card';
+        card.style.cssText = `position: relative; overflow: hidden; background: #0B1322; border: 1px solid ${isSelected ? '#00F0FF' : (isWinner ? '#10B981' : '#1A273D')}; border-radius: 10px; padding: 12px 14px; cursor: pointer; transition: all 0.2s ease; margin-bottom: 2px;`;
+
+        card.innerHTML = `
+          <div class="poll-bar-fill" style="position: absolute; left: 0; top: 0; bottom: 0; width: ${pct}%; background: rgba(0, 240, 255, 0.15); border-right: 2px solid ${isWinner ? '#10B981' : '#00F0FF'}; transition: width 0.3s ease;"></div>
+          <div style="display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 2; font-size: 12px;">
+            <span style="color: ${isSelected ? '#00F0FF' : '#E2E8F0'}; font-weight: 600;">
+              ${isSelected ? '● ' : ''}${escapeHTML(opt.text)}
+              ${isWinner ? ' (Winner)' : ''}
+            </span>
+            <span style="font-family: var(--font-mono); color: #38BDF8; font-weight: 700; font-size: 12px;">
+              ${pct}%
+            </span>
+          </div>
+        `;
+
+        if (poll.status === 'ACTIVE') {
+          card.addEventListener('click', () => {
+            userVotedOptionId = opt.id;
+            soundEngine.playSuccess();
+            if (navigator.vibrate) navigator.vibrate([30, 40, 30]);
+            remoteSync.submitDynamicPollVote(poll.id, opt.id);
+            renderDynamicMobilePoll(currentPoll);
+          });
+        }
+
+        listEl.appendChild(card);
+      });
+    }
+
+    // Initial mobile poll render
+    renderDynamicMobilePoll(currentPoll);
+
+    // 3. Hook Webhook Trigger
+    const btnWebhook = document.getElementById('btnMobileSendWebhook');
+    if (btnWebhook) {
+      btnWebhook.addEventListener('click', () => {
+        soundEngine.playClick();
+        if (navigator.vibrate) navigator.vibrate(30);
+        remoteSync.sendWebhookTrigger({
+          source: 'Mobile Remote PWA',
+          ip: '192.168.1.104',
+          action: 'trigger_stage_pipeline'
+        });
+        btnWebhook.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> <span>Payload Dispatched to Stage!</span>';
+        btnWebhook.style.background = '#10B981';
+        setTimeout(() => {
+          btnWebhook.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> <span>Send Webhook Event to Stage</span>';
+          btnWebhook.style.background = '';
+        }, 1600);
+      });
+    }
+
+    // 4. Hook Stage Navigators (Dual Broadcast: Local Air-Gap + Supabase Cloud)
+    document.getElementById('btnRemotePrev')?.addEventListener('click', () => {
+      soundEngine.playClick();
+      if (navigator.vibrate) navigator.vibrate(20);
+      remoteSync.navigateStage('prev');
+      supabaseRealtime.broadcast('SLIDE_NAV', { direction: 'prev' });
+    });
+
+    document.getElementById('btnRemoteNext')?.addEventListener('click', () => {
+      soundEngine.playClick();
+      if (navigator.vibrate) navigator.vibrate(20);
+      remoteSync.navigateStage('next');
+      supabaseRealtime.broadcast('SLIDE_NAV', { direction: 'next' });
+    });
+
+    // [PAGE HIGHLIGHT: remote.html — Supabase Realtime Mobile Controller Sync]
+    const remoteConnBadge = document.getElementById('remoteConnBadge');
+    const remoteCloudStatus = document.getElementById('remoteCloudStatus');
+    const remoteRoomInput = document.getElementById('remoteRoomInput');
+    const btnRemoteSyncRoom = document.getElementById('btnRemoteSyncRoom');
+
+    function updateRemoteConnectionUI(status) {
+      if (status.state === 'connected') {
+        if (remoteConnBadge) {
+          remoteConnBadge.className = 'cyber-badge badge-emerald';
+          remoteConnBadge.textContent = `● SUPABASE CLOUD (${status.latencyMs}ms)`;
+        }
+        if (remoteCloudStatus) {
+          remoteCloudStatus.innerHTML = '<span style="width: 6px; height: 6px; border-radius: 50%; background: #10B981; display: inline-block;"></span><span style="color: #10B981;">CONNECTED</span>';
+        }
+      } else if (status.state === 'connecting') {
+        if (remoteConnBadge) {
+          remoteConnBadge.className = 'cyber-badge badge-amber';
+          remoteConnBadge.textContent = '● CONNECTING...';
+        }
+        if (remoteCloudStatus) {
+          remoteCloudStatus.innerHTML = '<span style="width: 6px; height: 6px; border-radius: 50%; background: #F59E0B; display: inline-block;"></span><span style="color: #F59E0B;">CONNECTING</span>';
+        }
+      } else {
+        if (remoteConnBadge) {
+          remoteConnBadge.className = 'cyber-badge';
+          remoteConnBadge.style.color = '#38BDF8';
+          remoteConnBadge.style.borderColor = '#38BDF8';
+          remoteConnBadge.textContent = '● LOCAL AIR-GAP';
+        }
+        if (remoteCloudStatus) {
+          remoteCloudStatus.innerHTML = '<span style="width: 6px; height: 6px; border-radius: 50%; background: #38BDF8; display: inline-block;"></span><span style="color: #38BDF8;">AIR-GAP</span>';
+        }
+      }
+    }
+
+    updateRemoteConnectionUI(supabaseRealtime.getStatus());
+    supabaseRealtime.subscribe(updateRemoteConnectionUI);
+
+    btnRemoteSyncRoom?.addEventListener('click', () => {
+      const room = remoteRoomInput?.value.trim() || 'default_room';
+      soundEngine.playClick();
+      supabaseRealtime.setRoom(room);
+    });
+
+    supabaseRealtime.on('SLIDE_CHANGE', (payload) => {
+      if (payload && payload.title) {
+        const titleEl = document.getElementById('remoteProjectTitle');
+        if (titleEl) titleEl.textContent = payload.title;
+      }
+    });
+
+    // 5. Audience Live Q&A Backchannel (Task T049 & Task T075 XSS Sanitization)
+    let questionsList = [
+      { id: 'q_demo1', text: 'Can this run in a multi-region active-active VPC setup?', author: 'Lead Architect', upvotes: 4 },
+      { id: 'q_demo2', text: 'How is state managed between the edge workers and Redis?', author: 'DevOps Engineer', upvotes: 2 }
+    ];
+
+    const feedEl = document.getElementById('mobileQuestionsFeed');
+    const inputQ = document.getElementById('mobileQuestionInput');
+    const inputAuthor = document.getElementById('mobileAuthorInput');
+    const btnSubmitQ = document.getElementById('btnSubmitQuestion');
+    const feedbackEl = document.getElementById('questionFeedback');
+
+    function renderQuestions() {
+      if (!feedEl) return;
+      feedEl.innerHTML = '';
+      
+      questionsList.sort((a, b) => b.upvotes - a.upvotes);
+
+      questionsList.forEach(q => {
+        const item = document.createElement('div');
+        item.style.cssText = 'background: #0B1322; border: 1px solid #1E2D44; border-radius: 8px; padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; gap: 8px;';
+        item.innerHTML = `
+          <div style="flex: 1;">
+            <div style="font-size: 12px; color: #F8FAFC; line-height: 1.4; margin-bottom: 3px;">
+              ${escapeHTML(q.text)}
+            </div>
+            <div style="font-size: 10px; color: #64748B; font-family: var(--font-mono);">
+              From: <span style="color: #94A3B8;">${escapeHTML(q.author || 'Audience')}</span>
+            </div>
+          </div>
+          <button class="btn btn-secondary btn-upvote" data-qid="${escapeHTML(q.id)}" style="height: 28px; padding: 0 10px; font-size: 11px; font-family: var(--font-mono); border-color: rgba(245, 158, 11, 0.4); color: #F59E0B; display: inline-flex; align-items: center; gap: 4px;">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+            <span>${q.upvotes}</span>
+          </button>
+        `;
+
+        item.querySelector('.btn-upvote').addEventListener('click', () => {
+          soundEngine.playClick();
+          if (navigator.vibrate) navigator.vibrate(20);
+          q.upvotes++;
+          remoteSync.upvoteAudienceQuestion(q.id);
+          renderQuestions();
+        });
+
+        feedEl.appendChild(item);
+      });
+    }
+
+    renderQuestions();
+
+    btnSubmitQ?.addEventListener('click', () => {
+      const text = inputQ.value.trim();
+      if (!text) return;
+
+      soundEngine.playSuccess();
+      if (navigator.vibrate) navigator.vibrate(30);
+      const author = inputAuthor.value.trim() || 'Audience Member';
+      const newQ = {
+        id: 'q_' + Date.now(),
+        text,
+        author,
+        timestamp: Date.now(),
+        upvotes: 1
+      };
+
+      questionsList.unshift(newQ);
+      remoteSync.sendAudienceQuestion(newQ);
+      renderQuestions();
+
+      inputQ.value = '';
+      feedbackEl.style.display = 'block';
+      setTimeout(() => feedbackEl.style.display = 'none', 2500);
+    });
+
+    // Listen for incoming questions and votes from other clients
+    remoteSync.onEvent((event) => {
+      if (event.type === 'POLL_VOTE' || event.type === 'POLL_CREATE_OR_UPDATE' || event.type === 'POLL_STATUS_CHANGE') {
+        if (event.poll) renderDynamicMobilePoll(event.poll);
+      } else if (event.type === 'AUDIENCE_QUESTION') {
+        if (!questionsList.find(q => q.id === event.id)) {
+          questionsList.push(event);
+          renderQuestions();
+        }
+      } else if (event.type === 'QUESTION_UPVOTE') {
+        const found = questionsList.find(q => q.id === event.questionId);
+        if (found) {
+          found.upvotes++;
+          renderQuestions();
+        }
+      }
+    });
+
+    // Inbound broadcast from Human Rehearsal Playbook on stage (Task T164)
+    try {
+      const rehearsalChannel = new BroadcastChannel('apexflow_rehearsal_channel');
+      rehearsalChannel.onmessage = (e) => {
+        const data = e.data;
+        if (data && data.type === 'REHEARSAL_TICK') {
+          const strip = document.getElementById('remotePresenterRehearsalStrip');
+          const wpmEl = document.getElementById('remoteWpmPill');
+          const paceEl = document.getElementById('remotePacePill');
+          const budgetEl = document.getElementById('remoteBudgetTimer');
+
+          if (strip) strip.style.display = 'flex';
+          if (wpmEl) wpmEl.textContent = `${data.wpm} WPM`;
+          if (paceEl) {
+            if (data.wpm < 120) {
+              paceEl.textContent = 'SLOW';
+              paceEl.style.color = '#00F0FF';
+              paceEl.style.borderColor = '#00F0FF';
+            } else if (data.wpm <= 150) {
+              paceEl.textContent = 'OPTIMAL';
+              paceEl.style.color = '#10B981';
+              paceEl.style.borderColor = '#10B981';
+            } else {
+              paceEl.textContent = 'FAST';
+              paceEl.style.color = '#F59E0B';
+              paceEl.style.borderColor = '#F59E0B';
+            }
+          }
+          if (budgetEl) {
+            const rem = Math.max(0, data.slideBudget - data.slideElapsed);
+            const m = Math.floor(rem / 60);
+            const s = rem % 60;
+            budgetEl.textContent = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+            budgetEl.style.color = data.isOverage ? '#EF4444' : (rem <= 15 ? '#F59E0B' : '#10B981');
+          }
+        }
+      };
+    } catch (e) {}
+  </script>
+</body>
+</html>

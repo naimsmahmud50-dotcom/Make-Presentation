@@ -1,0 +1,163 @@
+/**
+ * =========================================================================================
+ * [MODULE]: APEXFLOW OS — Cyber Shaders & Animated Photon Pulses
+ * -----------------------------------------------------------------------------------------
+ * [ARCHITECTURAL ROLE]:
+ * Provides hardware-accelerated CSS keyframe animations, glow shaders, CRT phosphor
+ * scanlines, and flowing data pulse effects that simulate 120 FPS cybernetic energy.
+ *
+ * [PERFORMANCE OPTIMIZATIONS]:
+ * - Uses only GPU-accelerated CSS properties (`transform`, `opacity`, `filter`).
+ * - Zero layout reflow or repaint triggers.
+ * - Hardware layer promotion using `will-change: transform`.
+ * =========================================================================================
+ */
+
+/* Glowing Edge Pulse for Architecture Nodes */
+@keyframes photonPulse {
+  0% {
+    stroke-dashoffset: 100%;
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+    filter: drop-shadow(0 0 6px var(--accent-cyan));
+  }
+  100% {
+    stroke-dashoffset: 0%;
+    opacity: 0.3;
+  }
+}
+
+.photon-edge {
+  stroke-dasharray: 8, 12;
+  animation: photonPulse 2.4s linear infinite;
+}
+
+/* Radar Sweep Animation */
+@keyframes radarSweep {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.radar-beam {
+  transform-origin: center center;
+  animation: radarSweep 6s linear infinite;
+  will-change: transform;
+}
+
+/* Ambient Pulse Glow */
+@keyframes ambientGlow {
+  0%, 100% {
+    box-shadow: 0 0 20px -5px rgba(56, 189, 248, 0.2);
+    border-color: rgba(56, 189, 248, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 30px 2px rgba(56, 189, 248, 0.35);
+    border-color: rgba(56, 189, 248, 0.6);
+  }
+}
+
+.pulse-glow-cyan {
+  animation: ambientGlow 3s ease-in-out infinite;
+}
+
+/* Retro-Modern CRT Scanlines for Cyber-Terminal */
+.crt-overlay {
+  position: relative;
+  overflow: hidden;
+}
+
+.crt-overlay::after {
+  content: " ";
+  display: block;
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 0;
+  background: linear-gradient(
+    rgba(18, 16, 16, 0) 50%, 
+    rgba(0, 0, 0, 0.25) 50%
+  ), 
+  linear-gradient(
+    90deg,
+    rgba(255, 0, 0, 0.03),
+    rgba(0, 255, 0, 0.01),
+    rgba(0, 0, 255, 0.03)
+  );
+  background-size: 100% 3px, 6px 100%;
+  pointer-events: none;
+  opacity: 0.75;
+}
+
+/* Terminal Typewriter Cursor Blink */
+@keyframes cursorBlink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+.cursor-blink {
+  display: inline-block;
+  width: 9px;
+  height: 16px;
+  background-color: var(--accent-cyan);
+  vertical-align: middle;
+  margin-left: 4px;
+  animation: cursorBlink 0.9s infinite;
+}
+
+/* Floating Photon Reaction Physics Animation */
+@keyframes floatUpAndFade {
+  0% {
+    transform: translateY(0) scale(0.6) rotate(0deg);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+    transform: translateY(-40px) scale(1.2) rotate(-8deg);
+  }
+  85% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateY(-480px) scale(1) rotate(12deg);
+    opacity: 0;
+  }
+}
+
+.floating-reaction {
+  position: absolute;
+  pointer-events: none;
+  animation: floatUpAndFade 2.8s cubic-bezier(0.2, 0.8, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+
+/* Laser Pointer Trail Effect */
+.laser-point {
+  position: fixed;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background-color: #EF4444;
+  box-shadow: 0 0 16px 4px #EF4444, 0 0 32px 8px rgba(239, 68, 68, 0.6);
+  pointer-events: none;
+  z-index: 99999;
+  transform: translate(-50%, -50%);
+  transition: transform 0.04s ease-out;
+}
+
+.laser-point.emerald {
+  background-color: #10B981;
+  box-shadow: 0 0 16px 4px #10B981, 0 0 32px 8px rgba(16, 185, 129, 0.6);
+}
+
+/* Spotlight Dimming Mask */
+.spotlight-mask {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  pointer-events: none;
+  z-index: 99998;
+  background: radial-gradient(circle 180px at var(--mouse-x, 50%) var(--mouse-y, 50%), transparent 0%, rgba(0, 0, 0, 0.92) 100%);
+}

@@ -1,0 +1,56 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "IngestionEngineOutputContract",
+  "type": "object",
+  "required": [
+    "manifest",
+    "pipelineGraph",
+    "presentationConfig"
+  ],
+  "properties": {
+    "manifest": {
+      "type": "object",
+      "required": ["id", "name", "archetype", "confidenceScore", "techStack"],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "archetype": {
+          "type": "string",
+          "enum": [
+            "TYPE_A_AUTOMATION",
+            "TYPE_B_WEB_FRONTEND",
+            "TYPE_C_BACKEND_API",
+            "TYPE_D_DATA_ML",
+            "TYPE_E_MOBILE_DESKTOP",
+            "TYPE_F_GENERIC"
+          ]
+        },
+        "confidenceScore": { "type": "number", "minimum": 0, "maximum": 1 },
+        "techStack": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "category", "color"],
+            "properties": {
+              "name": { "type": "string" },
+              "category": { "type": "string" },
+              "color": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "pipelineGraph": {
+      "type": "object",
+      "required": ["nodes", "edges"],
+      "properties": {
+        "nodes": { "type": "array" },
+        "edges": { "type": "array" }
+      }
+    },
+    "presentationConfig": {
+      "type": "object",
+      "required": ["id", "theme", "activeStages"]
+    }
+  }
+}
